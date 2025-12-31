@@ -1,9 +1,8 @@
-using UnityEngine;
-using UniRx;
+﻿using UniRx;
 namespace InventorySample
 {
-  public class UniRxItemModel 
-  {
+    public class UniRxItemModel
+    {
         private readonly ReactiveProperty<int> _amount = new ReactiveProperty<int>(0);
         public IReadOnlyReactiveProperty<int> Amount => _amount;
 
