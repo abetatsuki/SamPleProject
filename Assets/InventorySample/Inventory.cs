@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
 namespace InventorySample
 {
     public class Inventory
@@ -24,6 +24,7 @@ namespace InventorySample
                 _itemsDic.Add(item, amount);
             }
         }
+
         /// <summary>
         /// 現在の所持リストを取得する
         /// </summary>
@@ -32,11 +33,25 @@ namespace InventorySample
             return _itemsDic;
         }
 
+        /// <summary>
+        /// 現在の所持リストをコンソールに表示する
+        /// </summary>
         public void PrintItemList()
         {
             foreach (var kvp in _itemsDic)
             {
                 Debug.Log($"Item: {kvp.Key.ItemName}, Amount: {kvp.Value}");
+            }
+        }
+
+        /// <summary>
+        /// 現在の所持リストをアイテムID順にコンソールに表示する    
+        ///</summary>   
+        public void PrintItemListItemId()
+        {
+            foreach (var kvp in _itemsDic.OrderBy(kvp => kvp.Key.ItemId))
+            {
+                Debug.Log($"Item ID: {kvp.Key.ItemId}, Item: {kvp.Key.ItemName}, Amount: {kvp.Value}");
             }
         }
         /// <summary>
