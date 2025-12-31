@@ -28,6 +28,13 @@ namespace InventorySample
             }
         }
         /// <summary>
+        /// 現在の所持リストを取得する
+        /// </summary>
+        public Dictionary<Item,int> GetItemList()
+        {
+           return _itemsDic;
+        }
+        /// <summary>
         /// 所持アイテムと数量を管理する辞書
         /// </summary>
         private Dictionary<Item,int> _itemsDic = new Dictionary<Item,int>();
