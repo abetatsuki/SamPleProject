@@ -13,6 +13,7 @@ namespace InventorySample.Develop
                 _inventory.AddItem(itemData, 5);
             }
             _inventory.PrintItemList();
+            _inventory.PrintItemListItemId();
         }
 
         private Inventory _inventory;
