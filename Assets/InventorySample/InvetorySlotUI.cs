@@ -1,0 +1,54 @@
+﻿using InventorySample;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// インベントリの1スロット分のUIを管理するクラス
+/// </summary>
+public sealed class InventorySlotUI : MonoBehaviour
+{
+
+    private void Awake()
+    {
+        _itemImage = GetComponent<Image>();
+    }
+    /// <summary>
+    /// スロットにアイテムのSpriteを表示する
+    /// </summary>
+    public void SetItem(ItemDataSO itemData)
+    {
+        _currentItemData = itemData;
+        _itemImage.sprite = _currentItemData.Icon;
+        _itemImage.enabled = true;
+    }
+
+    /// <summary>
+    /// スロットを空状態にする
+    /// </summary>
+    public void ClearItem()
+    {
+        _itemImage.sprite = null;
+        _itemImage.enabled = false;
+    }
+
+    /// <summary>
+    /// スロットが空かどうかを返す
+    /// </summary>
+    public bool IsEmpty()
+    {
+        return _itemImage.enabled == false;
+    }
+
+    /// <summary>
+    /// 現在のアイテムが指定のアイテムかどうかを返す
+    /// </summary>
+    public bool IsItem(ItemDataSO itemData)
+    {
+        return _currentItemData == itemData;
+    }
+
+    
+    private Image _itemImage;
+
+    private ItemDataSO _currentItemData;
+}
