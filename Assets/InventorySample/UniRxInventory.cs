@@ -5,13 +5,13 @@ namespace InventorySample
 {
     public class UniRxInventory
     {
-        public IReadOnlyReactiveDictionary<ItemData, int> ItemsDic => _itemsDic;
+        public IReadOnlyReactiveDictionary<ItemDataSO, int> ItemsDic => _itemsDic;
 
         /// <summary>
         /// アイテムを所持リストに追加する
         /// すてに所持してる場所合は数量を加算する
         /// </summary>
-        public void AddItem(ItemData item, int amount)
+        public void AddItem(ItemDataSO item, int amount)
         {
             if (amount == 0) return;
             // すでに同じアイテムを所持しているか確認する
@@ -30,7 +30,7 @@ namespace InventorySample
         /// <summary>
         /// アイテムを所持リストから削除する    
         /// </summary>
-        public void RemoveItem(ItemData item, int amount)
+        public void RemoveItem(ItemDataSO item, int amount)
         {
             if (amount == 0) return;
             // アイテムが存在するか確認する
@@ -48,7 +48,7 @@ namespace InventorySample
         /// <summary>
         /// 現在の所持リストを取得する
         /// </summary>
-        public ReactiveDictionary<ItemData, int> GetItemList()
+        public ReactiveDictionary<ItemDataSO, int> GetItemList()
         {
             return _itemsDic;
         }
@@ -75,7 +75,7 @@ namespace InventorySample
             }
         }
 
-        private ReactiveDictionary<ItemData, int> _itemsDic = new ReactiveDictionary<ItemData, int>();
+        private ReactiveDictionary<ItemDataSO, int> _itemsDic = new ReactiveDictionary<ItemDataSO, int>();
 
 
     }

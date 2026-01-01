@@ -8,7 +8,7 @@ namespace InventorySample.Develop
         private UniRxInventory _uniRxInventory;
         private Inventory _inventory;
         [SerializeField]
-        private ItemData[] _itemData;
+        private ItemDataSO[] _itemData;
         private float _timer = 0f;
         private void Start()
         {

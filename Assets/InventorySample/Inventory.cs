@@ -9,7 +9,7 @@ namespace InventorySample
         /// アイテムを所持リストに追加する
         /// すてに所持してる場所合は数量を加算する
         /// </summary>
-        public void AddItem(ItemData item, int amount)
+        public void AddItem(ItemDataSO item, int amount)
         {
             if (amount == 0) return;
             // すでに同じアイテムを所持しているか確認する
@@ -28,7 +28,7 @@ namespace InventorySample
         /// <summary>
         /// 現在の所持リストを取得する
         /// </summary>
-        public Dictionary<ItemData, int> GetItemList()
+        public Dictionary<ItemDataSO, int> GetItemList()
         {
             return _itemsDic;
         }
@@ -57,6 +57,6 @@ namespace InventorySample
         /// <summary>
         /// 所持アイテムと数量を管理する辞書
         /// </summary>
-        private Dictionary<ItemData, int> _itemsDic = new Dictionary<ItemData, int>();
+        private Dictionary<ItemDataSO, int> _itemsDic = new Dictionary<ItemDataSO, int>();
     }
 }
