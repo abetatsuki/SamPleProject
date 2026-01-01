@@ -402,15 +402,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 0
+    m_Left: 10
     m_Right: 0
-    m_Top: 0
+    m_Top: 60
     m_Bottom: 0
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 100, y: 100}
-  m_Spacing: {x: 10, y: 10}
+  m_Spacing: {x: 100, y: 50}
   m_Constraint: 0
   m_ConstraintCount: 3
 --- !u!1 &779924473
@@ -652,6 +652,9 @@ MonoBehaviour:
   _itemData:
   - {fileID: 11400000, guid: e288e813708513a43aa1e45af8b8ef48, type: 2}
   - {fileID: 11400000, guid: a789ede71b3f2d14d98da562037f164e, type: 2}
+  - {fileID: 11400000, guid: 9bfc2a787d564844980b3aef8e6d805e, type: 2}
+  - {fileID: 11400000, guid: a2021936243ba2c44bbc1837aac07826, type: 2}
+  - {fileID: 11400000, guid: ffd7108e9fbccce48815294149273e6e, type: 2}
   _view: {fileID: 2140143083}
 --- !u!4 &2140143082
 Transform:
