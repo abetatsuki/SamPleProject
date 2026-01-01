@@ -1,7 +1,9 @@
 ﻿using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem;
 namespace InventorySample.Develop
 {
+    [RequireComponent(typeof(PlayerInput))]
     public class InventorySample : MonoBehaviour
     {
         private UniRxItemModel _uniRxModel;
@@ -12,13 +14,18 @@ namespace InventorySample.Develop
         [SerializeField]
         private InventoryView _view;
         private InventoryPresenter _presenter;
+        private PlayerInputSystem _inputSystem;
+        private PlayerInput _playerInput;
         private float _timer = 0f;
         private void Start()
         {
+            _playerInput = GetComponent<PlayerInput>();
+            _inputSystem = new PlayerInputSystem(_playerInput);
             _inventory = new Inventory();
             _uniRxModel = new UniRxItemModel();
             _uniRxInventory = new UniRxInventory();
-            _presenter = new InventoryPresenter(_uniRxInventory, _view);
+            _presenter = new InventoryPresenter(_uniRxInventory, _view,_inputSystem);
+           
             //   PrintModelCount(_uniRxModel);
             PrintInventory(_uniRxInventory);
         }
@@ -30,8 +37,8 @@ namespace InventorySample.Develop
             {
                 _timer = 0f;
                 //  _uniRxModel.AddAmount(1);
-                _uniRxInventory.AddItem(_itemData[Random.Range(0, _itemData.Length)], 1);
-                _uniRxInventory.RemoveItem(_itemData[Random.Range(0, _itemData.Length)], 1);
+                //_uniRxInventory.AddItem(_itemData[Random.Range(0, _itemData.Length)], 1);
+               // _uniRxInventory.RemoveItem(_itemData[Random.Range(0, _itemData.Length)], 1);
             }
 
         }
