@@ -1,4 +1,5 @@
 ﻿using UniRx;
+using UnityEngine;
 
 namespace InventorySample
 {
@@ -9,15 +10,16 @@ namespace InventorySample
     {
         private readonly UniRxInventory _model;
         private readonly InventoryView _view;
+        private readonly PlayerInputSystem _system;
 
         /// <summary>
         /// Model と View を受け取り、購読を開始する
         /// </summary>
-        public InventoryPresenter(UniRxInventory model, InventoryView view)
+        public InventoryPresenter(UniRxInventory model, InventoryView view,PlayerInputSystem system)
         {
             _model = model;
             _view = view;
-
+            _system = system;
             Bind();
         }
 
@@ -33,8 +35,17 @@ namespace InventorySample
             _model.ItemsDic
                 .ObserveRemove()
                 .Subscribe(OnItemRemoved);
+            _system.SelectIndex
+                .Subscribe(index =>
+                {
+                    DebugSelectIndex(index);
+                });
         }
 
+        private void DebugSelectIndex(int index)
+        {
+           Debug.Log($"Selected Index: {index}");
+        }
         /// <summary>
         /// アイテムが追加されたときの処理
         /// </summary>
