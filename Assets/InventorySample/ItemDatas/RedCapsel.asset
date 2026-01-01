@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: RedCapsel
   m_EditorClassIdentifier: Assembly-CSharp::InventorySample.ItemData
   _itemName: RedCapsel
-  _itemId: 1
+  _itemId: 3
   _icon: {fileID: 1812875428, guid: 60ab1525d37f53540819473652582427, type: 3}

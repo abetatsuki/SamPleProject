@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: PinkPosion
   m_EditorClassIdentifier: Assembly-CSharp::InventorySample.ItemData
   _itemName: PinkPosion
-  _itemId: 1
+  _itemId: 2
   _icon: {fileID: 2033802111, guid: 60ab1525d37f53540819473652582427, type: 3}

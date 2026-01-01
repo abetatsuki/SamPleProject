@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BluePosion
   m_EditorClassIdentifier: Assembly-CSharp::InventorySample.ItemData
   _itemName: BluePosion
-  _itemId: 1
+  _itemId: 0
   _icon: {fileID: 1466114391, guid: 60ab1525d37f53540819473652582427, type: 3}
