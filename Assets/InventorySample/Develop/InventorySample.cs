@@ -9,13 +9,17 @@ namespace InventorySample.Develop
         private Inventory _inventory;
         [SerializeField]
         private ItemDataSO[] _itemData;
+        [SerializeField]
+        private InventoryView _view;
+        private InventoryPresenter _presenter;
         private float _timer = 0f;
         private void Start()
         {
             _inventory = new Inventory();
             _uniRxModel = new UniRxItemModel();
             _uniRxInventory = new UniRxInventory();
-            PrintModelCount(_uniRxModel);
+            _presenter = new InventoryPresenter(_uniRxInventory, _view);
+            //   PrintModelCount(_uniRxModel);
             PrintInventory(_uniRxInventory);
         }
 
