@@ -45,6 +45,12 @@ namespace InventorySample
             }
         }
 
+        public void UpdateSelect(int index)
+        {
+
+        }
+
+
         [SerializeField]
         private InventorySlotUI slotPrefab;
 
