@@ -12,6 +12,7 @@ public sealed class InventorySlotUI : MonoBehaviour
     private void Awake()
     {
         _itemImage = GetComponent<Image>();
+        _outline = GetComponent<Outline>();
     }
     /// <summary>
     /// スロットにアイテムのSpriteを表示する
@@ -22,7 +23,7 @@ public sealed class InventorySlotUI : MonoBehaviour
         _itemImage.sprite = _currentItemData.Icon;
         _itemImage.enabled = true;
     }
-    
+
 
 
     /// <summary>
@@ -52,10 +53,12 @@ public sealed class InventorySlotUI : MonoBehaviour
 
     public void SetSelected(bool isSelected)
     {
-        
+        // オブジェクトが破棄されていたら何もしない
+        if (this == null || _outline == null) return;
+        _outline.enabled = isSelected;
     }
 
     private Image _itemImage;
-
+    private Outline _outline;
     private ItemDataSO _currentItemData;
 }
