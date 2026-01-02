@@ -46,6 +46,11 @@ namespace InventorySample
                     _Select.MoveSelection(delta);
                     Debug.Log($"Selected Index: {_Select.SelectedIndex.Value}");
                 });
+            _Select.SelectedIndex
+                .Subscribe(index =>
+                {
+                    _view.UpdateSelect(index);
+                });
         }
 
         /// <summary>
