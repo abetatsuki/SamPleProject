@@ -9,6 +9,7 @@ namespace InventorySample
     /// </summary>
     public sealed class InventoryView : MonoBehaviour
     {
+        public int SlotCount => _gridWidth * _gridHeight;
         /// <summary>
         /// 空いているスロットにアイテムを表示する
         /// </summary>
@@ -47,27 +48,31 @@ namespace InventorySample
 
         public void UpdateSelect(int index)
         {
-
+            for(int i = 0; i < _slots.Count; i++)
+            {
+                bool isSelected = (i == index);
+                _slots[i].SetSelected(isSelected);
+            }
         }
 
 
         [SerializeField]
-        private InventorySlotUI slotPrefab;
+        private InventorySlotUI _slotPrefab;
 
         [SerializeField]
-        private GridLayoutGroup gridLayoutGroup;
+        private GridLayoutGroup _gridLayoutGroup;
 
         [SerializeField]
-        private int gridWidth = 3;
+        private int _gridWidth = 3;
 
         [SerializeField]
-        private int gridHeight = 3;
+        private int _gridHeight = 3;
 
         private readonly List<InventorySlotUI> _slots = new List<InventorySlotUI>();
 
         private void Start()
         {
-            CreateSlots(gridWidth, gridHeight);
+            CreateSlots(_gridWidth, _gridHeight);
         }
 
         /// <summary>
@@ -79,7 +84,7 @@ namespace InventorySample
 
             for (int i = 0; i < slotCount; i++)
             {
-                InventorySlotUI slot = Instantiate(slotPrefab, gridLayoutGroup.transform);
+                InventorySlotUI slot = Instantiate(_slotPrefab, _gridLayoutGroup.transform);
                 slot.ClearItem();
                 _slots.Add(slot);
             }
