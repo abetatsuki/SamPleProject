@@ -35,22 +35,28 @@ namespace InventorySample
         {
             _model.ItemsDic
                 .ObserveAdd()
-                .Subscribe(OnItemAdded);
+                .Subscribe(OnItemAdded)
+                .AddTo(_view);
 
             _model.ItemsDic
                 .ObserveRemove()
-                .Subscribe(OnItemRemoved);
+                .Subscribe(OnItemRemoved)
+                .AddTo(_view);
             _system.OnSelect
                 .Subscribe(delta =>
                 {
                     _Select.MoveSelection(delta);
                     Debug.Log($"Selected Index: {_Select.SelectedIndex.Value}");
-                });
+                })
+                .AddTo(_view);
+                
             _Select.SelectedIndex
                 .Subscribe(index =>
                 {
                     _view.UpdateSelect(index);
-                });
+                })
+                .AddTo(_view);
+                
         }
 
         /// <summary>
