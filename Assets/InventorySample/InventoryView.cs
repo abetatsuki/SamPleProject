@@ -48,7 +48,8 @@ namespace InventorySample
 
         public void UpdateSelect(int index)
         {
-            for(int i = 0; i < _slots.Count; i++)
+
+            for (int i = 0; i < _slots.Count; i++)
             {
                 bool isSelected = (i == index);
                 _slots[i].SetSelected(isSelected);
@@ -70,7 +71,7 @@ namespace InventorySample
 
         private readonly List<InventorySlotUI> _slots = new List<InventorySlotUI>();
 
-        private void Start()
+        private void Awake()
         {
             CreateSlots(_gridWidth, _gridHeight);
         }
@@ -80,6 +81,11 @@ namespace InventorySample
         /// </summary>
         private void CreateSlots(int width, int height)
         {
+            if(_slotPrefab == null || _gridLayoutGroup == null)
+            {
+                Debug.LogError("インベントリスロットのプレハブまたはGridLayoutGroupが設定されていません");
+                return;
+            }
             int slotCount = width * height;
 
             for (int i = 0; i < slotCount; i++)
