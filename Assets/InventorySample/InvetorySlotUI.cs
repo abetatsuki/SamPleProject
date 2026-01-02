@@ -1,4 +1,5 @@
 ﻿using InventorySample;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +22,8 @@ public sealed class InventorySlotUI : MonoBehaviour
         _itemImage.sprite = _currentItemData.Icon;
         _itemImage.enabled = true;
     }
+    
+
 
     /// <summary>
     /// スロットを空状態にする
@@ -47,7 +50,11 @@ public sealed class InventorySlotUI : MonoBehaviour
         return _currentItemData == itemData;
     }
 
-    
+    public void SetSelected(bool isSelected)
+    {
+        
+    }
+
     private Image _itemImage;
 
     private ItemDataSO _currentItemData;
