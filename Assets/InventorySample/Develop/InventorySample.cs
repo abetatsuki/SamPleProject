@@ -25,6 +25,7 @@ namespace InventorySample.Develop
             _inventory = new Inventory();
             _uniRxModel = new UniRxItemModel();
             _uniRxInventory = new UniRxInventory();
+            _Select = new InventorySelect(_uniRxInventory);
             _presenter = new InventoryPresenter(_uniRxInventory, _view,_inputSystem,_Select);
            
             //   PrintModelCount(_uniRxModel);
