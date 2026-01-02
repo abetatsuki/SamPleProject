@@ -8,20 +8,25 @@ namespace InventorySample
     /// </summary>
     public sealed class InventoryPresenter
     {
-        private readonly UniRxInventory _model;
-        private readonly InventoryView _view;
-        private readonly PlayerInputSystem _system;
+        
 
         /// <summary>
         /// Model と View を受け取り、購読を開始する
         /// </summary>
-        public InventoryPresenter(UniRxInventory model, InventoryView view,PlayerInputSystem system)
+        public InventoryPresenter(UniRxInventory model, InventoryView view,PlayerInputSystem system
+            ,InventorySelect select)
         {
             _model = model;
             _view = view;
             _system = system;
+            _Select = select;
             Bind();
         }
+
+        private readonly UniRxInventory _model;
+        private readonly InventoryView _view;
+        private readonly PlayerInputSystem _system;
+        private readonly InventorySelect _Select;
 
         /// <summary>
         /// Model の変更を購読して View に反映する
@@ -35,17 +40,14 @@ namespace InventorySample
             _model.ItemsDic
                 .ObserveRemove()
                 .Subscribe(OnItemRemoved);
-            _system.SelectIndex
-                .Subscribe(index =>
+            _system.OnSelect
+                .Subscribe(delta =>
                 {
-                    DebugSelectIndex(index);
+                    _Select.MoveSelection(delta);
+                    Debug.Log($"Selected Index: {_Select.SelectedIndex.Value}");
                 });
         }
 
-        private void DebugSelectIndex(int index)
-        {
-           Debug.Log($"Selected Index: {index}");
-        }
         /// <summary>
         /// アイテムが追加されたときの処理
         /// </summary>
