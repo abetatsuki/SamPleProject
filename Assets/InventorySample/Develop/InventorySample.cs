@@ -16,6 +16,7 @@ namespace InventorySample.Develop
         private InventoryPresenter _presenter;
         private PlayerInputSystem _inputSystem;
         private PlayerInput _playerInput;
+        private InventorySelect _Select;
         private float _timer = 0f;
         private void Start()
         {
@@ -24,7 +25,7 @@ namespace InventorySample.Develop
             _inventory = new Inventory();
             _uniRxModel = new UniRxItemModel();
             _uniRxInventory = new UniRxInventory();
-            _presenter = new InventoryPresenter(_uniRxInventory, _view,_inputSystem);
+            _presenter = new InventoryPresenter(_uniRxInventory, _view,_inputSystem,_Select);
            
             //   PrintModelCount(_uniRxModel);
             PrintInventory(_uniRxInventory);
@@ -37,7 +38,7 @@ namespace InventorySample.Develop
             {
                 _timer = 0f;
                 //  _uniRxModel.AddAmount(1);
-                //_uniRxInventory.AddItem(_itemData[Random.Range(0, _itemData.Length)], 1);
+                _uniRxInventory.AddItem(_itemData[Random.Range(0, _itemData.Length)], 1);
                // _uniRxInventory.RemoveItem(_itemData[Random.Range(0, _itemData.Length)], 1);
             }
 
