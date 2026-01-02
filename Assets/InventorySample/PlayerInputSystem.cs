@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UniRx;
 using UnityEngine.InputSystem;
+using System;
 
 namespace InventorySample
 {
@@ -10,24 +11,26 @@ namespace InventorySample
         {
             _playerInput = playerInput;
             _selectAction = _playerInput.actions[SelectActionName];
-            _selectAction.started += Select;
+            _selectAction.started += OnSelectAction;
 
         }
 
+        public IObservable<int> OnSelect => _onSelectSubject;
 
-        public IReadOnlyReactiveProperty<int> SelectIndex => _selectIndex;
 
-        public void Select(InputAction.CallbackContext ctx)
+        public void OnSelectAction(InputAction.CallbackContext ctx)
         {
             float value = ctx.ReadValue<float>();
             int delta = Mathf.RoundToInt(value);
-            _selectIndex.Value += delta;
-            Debug.Log(_selectIndex.Value);
+            if (delta != 0)
+            {
+                _onSelectSubject.OnNext(delta);
+            }
         }
 
 
 
-        private readonly ReactiveProperty<int> _selectIndex = new ReactiveProperty<int>(0);
+        private readonly Subject<int> _onSelectSubject = new Subject<int>();
         private PlayerInput _playerInput;
         private InputAction _selectAction;
         private const string SelectActionName = "Select";
