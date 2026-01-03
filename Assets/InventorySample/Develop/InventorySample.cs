@@ -1,35 +1,40 @@
-﻿using UniRx;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 namespace InventorySample.Develop
 {
     [RequireComponent(typeof(PlayerInput))]
     public class InventorySample : MonoBehaviour
     {
-        private UniRxItemModel _uniRxModel;
-        private UniRxInventory _uniRxInventory;
-        private Inventory _inventory;
-        [SerializeField]
-        private ItemDataSO[] _itemData;
-        [SerializeField]
+        private InventoryModel _inventoryModel;
         private InventoryView _view;
         private InventoryPresenter _presenter;
         private PlayerInputSystem _inputSystem;
-        private PlayerInput _playerInput;
-        private InventorySelect _Select;
+        private InventorySelect _select;
+
+        [SerializeField] private ItemDataSO[] _itemData;
+
         private float _timer = 0f;
+
         private void Start()
         {
-            _playerInput = GetComponent<PlayerInput>();
-            _inputSystem = new PlayerInputSystem(_playerInput);
-            _inventory = new Inventory();
-            _uniRxModel = new UniRxItemModel();
-            _uniRxInventory = new UniRxInventory();
-            _Select = new InventorySelect(_uniRxInventory);
-            _presenter = new InventoryPresenter(_uniRxInventory, _view,_inputSystem,_Select);
-           
-            //   PrintModelCount(_uniRxModel);
-            PrintInventory(_uniRxInventory);
+            // View の参照取得（シリアライズされていなければ GetComponent）
+            if (_view == null) _view = FindFirstObjectByType<InventoryView>();
+
+            // Input System の初期化
+            var playerInput = GetComponent<PlayerInput>();
+            _inputSystem = new PlayerInputSystem(playerInput);
+
+            // スロットベースの Model を生成 (View のスロット数に合わせる)
+            int capacity = _view != null ? _view.TotalSlots : 9;
+            _inventoryModel = new InventoryModel(capacity);
+
+            // Select と Presenter の構築
+            _select = new InventorySelect(_inventoryModel);
+            _presenter = new InventoryPresenter(_inventoryModel, _view, _inputSystem, _select);
+
+            Debug.Log("Inventory Initialized with " + capacity + " slots.");
         }
 
         private void Update()
@@ -38,70 +43,12 @@ namespace InventorySample.Develop
             if (_timer >= 2f)
             {
                 _timer = 0f;
-                //  _uniRxModel.AddAmount(1);
-                _uniRxInventory.AddItem(_itemData[Random.Range(0, _itemData.Length)], 1);
-               // _uniRxInventory.RemoveItem(_itemData[Random.Range(0, _itemData.Length)], 1);
+                if (_itemData != null && _itemData.Length > 0)
+                {
+                    var randomItem = _itemData[Random.Range(0, _itemData.Length)];
+                    _inventoryModel.AddItem(randomItem, 1);
+                }
             }
-
         }
-
-        private void InventoryTest()
-        {
-
-            foreach (var itemData in _itemData)
-            {
-                // 各アイテムを5個ずつ追加する
-                _inventory.AddItem(itemData, 5);
-            }
-            _inventory.PrintItemList();
-            _inventory.PrintItemListItemId();
-        }
-
-        /// <summary>
-        /// モデルの Amount を購読して表示する
-        /// </summary>
-        private void PrintModelCount(UniRxItemModel model)
-        {
-            model.Amount
-                .Subscribe(amount =>
-                {
-                    // Amount が更新されたときの処理
-                    Debug.Log($"Current Amount: {amount}");
-                })
-                .AddTo(this);
-        }
-
-        /// <summary>
-        /// インベントリの所持アイテムを購読して表示する
-        /// </summary>
-        private void PrintInventory(UniRxInventory inventory)
-        {
-            inventory.ItemsDic
-                .ObserveAdd()
-                .Subscribe(addEvent =>
-                {
-                    Debug.Log($"Added Item: {addEvent.Key.ItemName}, Amount: {addEvent.Value}");
-                })
-                .AddTo(this);
-            inventory.ItemsDic
-                .ObserveReplace()
-                .Subscribe(replaceEvent =>
-                {
-                    Debug.Log($"Updated Item: {replaceEvent.Key.ItemName}, New Amount: {replaceEvent.NewValue}");
-                })
-                .AddTo(this);
-            inventory.ItemsDic
-                .ObserveRemove()
-                .Subscribe(x =>
-                {
-                    // 削除されたアイテムを表示する
-                    Debug.Log($"Removed: {x.Key.name}");
-                })
-                .AddTo(this);
-
-        }
-
-
-
     }
 }
