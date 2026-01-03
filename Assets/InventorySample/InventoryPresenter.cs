@@ -1,5 +1,4 @@
-﻿using UniRx;
-using UnityEngine;
+using UniRx;
 
 namespace InventorySample
 {
@@ -8,71 +7,52 @@ namespace InventorySample
     /// </summary>
     public sealed class InventoryPresenter
     {
-        
-
-        /// <summary>
-        /// Model と View を受け取り、購読を開始する
-        /// </summary>
-        public InventoryPresenter(UniRxInventory model, InventoryView view,PlayerInputSystem system
-            ,InventorySelect select)
+        public InventoryPresenter(InventoryModel model, InventoryView view, PlayerInputSystem system, InventorySelect select)
         {
             _model = model;
             _view = view;
             _system = system;
-            _Select = select;
+            _select = select;
             Bind();
         }
 
-        private readonly UniRxInventory _model;
+        private readonly InventoryModel _model;
         private readonly InventoryView _view;
         private readonly PlayerInputSystem _system;
-        private readonly InventorySelect _Select;
+        private readonly InventorySelect _select;
 
         /// <summary>
-        /// Model の変更を購読して View に反映する
+        /// Model の各スロットの状態を監視して View に反映する
         /// </summary>
         private void Bind()
         {
-            _model.ItemsDic
-                .ObserveAdd()
-                .Subscribe(OnItemAdded)
-                .AddTo(_view);
+            // 各スロットの状態変更を監視
+            for (int i = 0; i < _model.Capacity; i++)
+            {
+                int index = i; // クロージャ用
+                _model.Slots[i].ItemData
+                    .Subscribe(item =>
+                    {
+                        _view.UpdateSlot(index, item);
+                    })
+                    .AddTo(_view);
+            }
 
-            _model.ItemsDic
-                .ObserveRemove()
-                .Subscribe(OnItemRemoved)
-                .AddTo(_view);
+            // 入力による選択移動
             _system.OnSelect
                 .Subscribe(delta =>
                 {
-                    _Select.MoveSelection(delta);
-                    Debug.Log($"Selected Index: {_Select.SelectedIndex.Value}");
+                    _select.MoveSelection(delta);
                 })
                 .AddTo(_view);
                 
-            _Select.SelectedIndex
+            // 選択インデックスの変化を監視
+            _select.SelectedIndex
                 .Subscribe(index =>
                 {
                     _view.UpdateSelect(index);
                 })
                 .AddTo(_view);
-                
-        }
-
-        /// <summary>
-        /// アイテムが追加されたときの処理
-        /// </summary>
-        private void OnItemAdded(DictionaryAddEvent<ItemDataSO, int> addEvent)
-        {
-            _view.AddItem(addEvent.Key, addEvent.Value);
-        }
-
-        /// <summary>
-        /// アイテムが削除されたときの処理
-        /// </summary>
-        private void OnItemRemoved(DictionaryRemoveEvent<ItemDataSO, int> removeEvent)
-        {
-            _view.RemoveItem(removeEvent.Key);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,54 +9,6 @@ namespace InventorySample
     /// </summary>
     public sealed class InventoryView : MonoBehaviour
     {
-        public int SlotCount => _gridWidth * _gridHeight;
-        /// <summary>
-        /// 空いているスロットにアイテムを表示する
-        /// </summary>
-        public void AddItem(ItemDataSO itemData, int amount)
-        {
-            InventorySlotUI emptySlot = _slots.Find(slot => slot.IsEmpty());
-
-            if (emptySlot == null)
-            {
-                Debug.LogWarning("インベントリに空きスロットがありません");
-                return;
-            }
-
-            emptySlot.SetItem(itemData);
-        }
-
-        /// <summary>
-        /// 指定アイテムを表示しているスロットを空にする
-        /// </summary>
-        public void RemoveItem(ItemDataSO itemData)
-        {
-            foreach (InventorySlotUI slot in _slots)
-            {
-                if (slot.IsEmpty())
-                {
-                    continue;
-                }
-
-                if (slot.IsItem(itemData))
-                {
-                    slot.ClearItem();
-                    return;
-                }
-            }
-        }
-
-        public void UpdateSelect(int index)
-        {
-
-            for (int i = 0; i < _slots.Count; i++)
-            {
-                bool isSelected = (i == index);
-                _slots[i].SetSelected(isSelected);
-            }
-        }
-
-
         [SerializeField]
         private InventorySlotUI _slotPrefab;
 
@@ -69,26 +21,63 @@ namespace InventorySample
         [SerializeField]
         private int _gridHeight = 3;
 
+        public int TotalSlots => _gridWidth * _gridHeight;
+
         private readonly List<InventorySlotUI> _slots = new List<InventorySlotUI>();
 
         private void Awake()
         {
-            CreateSlots(_gridWidth, _gridHeight);
+            CreateSlots(TotalSlots);
         }
 
         /// <summary>
-        /// 指定サイズのインベントリスロットを生成する
+        /// 指定インデックスのスロット表示を更新する
         /// </summary>
-        private void CreateSlots(int width, int height)
+        public void UpdateSlot(int index, ItemDataSO item)
+        {
+            if (index < 0 || index >= _slots.Count) return;
+
+            if (item != null)
+            {
+                _slots[index].SetItem(item);
+            }
+            else
+            {
+                _slots[index].ClearItem();
+            }
+        }
+
+        /// <summary>
+        /// 選択状態の表示を更新する
+        /// </summary>
+        public void UpdateSelect(int index)
+        {
+            for (int i = 0; i < _slots.Count; i++)
+            {
+                bool isSelected = (i == index);
+                _slots[i].SetSelected(isSelected);
+            }
+        }
+
+        /// <summary>
+        /// スロットを生成する
+        /// </summary>
+        private void CreateSlots(int count)
         {
             if(_slotPrefab == null || _gridLayoutGroup == null)
             {
-                Debug.LogError("インベントリスロットのプレハブまたはGridLayoutGroupが設定されていません");
+                Debug.LogError("プレハブまたはGridLayoutGroupが設定されていません");
                 return;
             }
-            int slotCount = width * height;
 
-            for (int i = 0; i < slotCount; i++)
+            // 既存の表示をクリア
+            foreach (Transform child in _gridLayoutGroup.transform)
+            {
+                Destroy(child.gameObject);
+            }
+            _slots.Clear();
+
+            for (int i = 0; i < count; i++)
             {
                 InventorySlotUI slot = Instantiate(_slotPrefab, _gridLayoutGroup.transform);
                 slot.ClearItem();
