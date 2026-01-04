@@ -1,25 +1,49 @@
 using UnityEngine;
-using Cysharp.Threading.Tasks;
-using System.Threading;
+using ActionSample.StateMachine;
 
 namespace ActionSample
 {
     public class EnemyController : MonoBehaviour
     {
-        [SerializeField] private float stunDuration = 2.0f;
-        private MeshRenderer meshRenderer;
-        private Color originalColor;
-        
-        // CancellationTokenSource to handle manual cancellation (e.g., re-stun)
-        private CancellationTokenSource stunCts;
+        [Header("Settings")]
+        public float StunDuration = 2.0f;
+
+        // Components
+        public MeshRenderer MeshRenderer { get; private set; }
+        public Color OriginalColor { get; private set; }
+
+        // State Machine
+        public StateMachine.StateMachine StateMachine { get; private set; }
+        public EnemyIdleState IdleState { get; private set; }
+        public EnemyStunState StunState { get; private set; }
 
         private void Awake()
         {
-            meshRenderer = GetComponent<MeshRenderer>();
-            if (meshRenderer != null)
+            MeshRenderer = GetComponent<MeshRenderer>();
+            if (MeshRenderer != null)
             {
-                originalColor = meshRenderer.material.color;
+                OriginalColor = MeshRenderer.material.color;
             }
+
+            // Initialize State Machine
+            StateMachine = new StateMachine.StateMachine();
+            IdleState = new EnemyIdleState(this);
+            StunState = new EnemyStunState(this);
+        }
+
+        private void Start()
+        {
+            StateMachine.Initialize(IdleState);
+        }
+
+        private void Update()
+        {
+            StateMachine.CurrentState.LogicUpdate();
+        }
+
+        private void FixedUpdate()
+        {
+            StateMachine.CurrentState.PhysicsUpdate();
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -28,61 +52,10 @@ namespace ActionSample
             
             PlayerController player = collision.gameObject.GetComponent<PlayerController>();
             
+            // If hit by sliding player, transition to StunState
             if (player != null && player.IsSliding)
             {
-                // Use Forget() to fire and forget the async method
-                StunAsync().Forget();
-            }
-        }
-
-        private async UniTaskVoid StunAsync()
-        {
-            if (meshRenderer == null) return;
-
-            // 1. Cancel previous stun if active (reset timer)
-            if (stunCts != null)
-            {
-                stunCts.Cancel();
-                stunCts.Dispose();
-            }
-            stunCts = new CancellationTokenSource();
-
-            // 2. Create a linked token: cancels if 'stunCts' is cancelled OR object is destroyed
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                stunCts.Token, 
-                this.GetCancellationTokenOnDestroy()
-            );
-
-            try
-            {
-                // Apply Stun Color
-                meshRenderer.material.color = Color.blue;
-                Debug.Log("Enemy Stunned!");
-
-                // Wait for duration (converted to milliseconds)
-                await UniTask.Delay((int)(stunDuration * 1000), cancellationToken: linkedCts.Token);
-
-                // Revert Color
-                meshRenderer.material.color = originalColor;
-                Debug.Log("Enemy Recovered!");
-            }
-            catch (System.OperationCanceledException)
-            {
-                // Handle cancellation (re-stun or destroy) gracefully
-            }
-            finally
-            {
-                linkedCts.Dispose();
-            }
-        }
-
-        private void OnDestroy()
-        {
-            // Clean up the CTS if the object is destroyed manually
-            if (stunCts != null)
-            {
-                stunCts.Cancel();
-                stunCts.Dispose();
+                StateMachine.ChangeState(StunState);
             }
         }
     }
