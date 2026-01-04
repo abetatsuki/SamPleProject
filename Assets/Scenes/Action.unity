@@ -1400,10 +1400,10 @@ MonoBehaviour:
   FireRate: 0.1
   ReloadTime: 1.5
   NormalFov: 60
-  AdsFov: 20
+  AdsFov: 50
   AdsSpeed: 10
   HipPosition: {x: 0, y: 0, z: 0}
-  AdsPosition: {x: 0, y: 0.2, z: 1}
+  AdsPosition: {x: 0, y: 0.27, z: 0.2}
 --- !u!1 &1929571109
 GameObject:
   m_ObjectHideFlags: 0
