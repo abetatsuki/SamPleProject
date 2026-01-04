@@ -7,6 +7,8 @@ namespace ActionSample
     {
         [Header("Settings")]
         public float StunDuration = 2.0f;
+        public float MoveSpeed = 3.0f;
+        public Transform[] Waypoints;
 
         // Components
         public MeshRenderer MeshRenderer { get; private set; }
@@ -16,6 +18,7 @@ namespace ActionSample
         public StateMachine.StateMachine StateMachine { get; private set; }
         public EnemyIdleState IdleState { get; private set; }
         public EnemyStunState StunState { get; private set; }
+        public EnemyPatrolState PatrolState { get; private set; }
 
         private void Awake()
         {
@@ -29,11 +32,19 @@ namespace ActionSample
             StateMachine = new StateMachine.StateMachine();
             IdleState = new EnemyIdleState(this);
             StunState = new EnemyStunState(this);
+            PatrolState = new EnemyPatrolState(this);
         }
 
         private void Start()
         {
-            StateMachine.Initialize(IdleState);
+            if (Waypoints != null && Waypoints.Length > 0)
+            {
+                StateMachine.Initialize(PatrolState);
+            }
+            else
+            {
+                StateMachine.Initialize(IdleState);
+            }
         }
 
         private void Update()
