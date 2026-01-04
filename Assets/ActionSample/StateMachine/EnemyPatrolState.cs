@@ -13,10 +13,26 @@ namespace ActionSample.StateMachine
         public override void Enter()
         {
             base.Enter();
+            ctx.NavAgent.isStopped = false;
+            
             // Start moving towards the nearest or next waypoint
             if (ctx.Waypoints == null || ctx.Waypoints.Length == 0)
             {
                 ctx.StateMachine.ChangeState(ctx.IdleState);
+            }
+            else
+            {
+                SetDestinationToCurrentWaypoint();
+            }
+        }
+
+        public override void Exit()
+        {
+            base.Exit();
+            // Stop movement when exiting patrol (e.g., when stunned)
+            if (ctx.NavAgent.enabled)
+            {
+                ctx.NavAgent.isStopped = true;
             }
         }
 
@@ -35,25 +51,20 @@ namespace ActionSample.StateMachine
                 return;
             }
 
-            Transform target = ctx.Waypoints[currentWaypointIndex];
-            Vector3 direction = (target.position - ctx.transform.position).normalized;
-            float distance = Vector3.Distance(ctx.transform.position, target.position);
-
-            // Move towards target
-            // Note: Simple transform movement. Use Rigidbody or NavMeshAgent for better physics/navigation.
-            ctx.transform.position += direction * ctx.MoveSpeed * Time.deltaTime;
-            
-            // Face the target
-            if (direction != Vector3.zero)
+            // Check if agent has reached the destination
+            if (!ctx.NavAgent.pathPending && ctx.NavAgent.remainingDistance <= ctx.NavAgent.stoppingDistance)
             {
-                ctx.transform.rotation = Quaternion.LookRotation(direction);
+                if (!ctx.NavAgent.hasPath || ctx.NavAgent.velocity.sqrMagnitude == 0f)
+                {
+                    StartWait(1.0f); // Wait 1 second at each waypoint
+                }
             }
+        }
 
-            // Check if reached
-            if (distance < 0.2f)
-            {
-                StartWait(1.0f); // Wait 1 second at each waypoint
-            }
+        private void SetDestinationToCurrentWaypoint()
+        {
+            if (ctx.Waypoints.Length == 0) return;
+            ctx.NavAgent.SetDestination(ctx.Waypoints[currentWaypointIndex].position);
         }
 
         private void StartWait(float duration)
@@ -65,6 +76,7 @@ namespace ActionSample.StateMachine
         private void NextWaypoint()
         {
             currentWaypointIndex = (currentWaypointIndex + 1) % ctx.Waypoints.Length;
+            SetDestinationToCurrentWaypoint();
         }
     }
 }
