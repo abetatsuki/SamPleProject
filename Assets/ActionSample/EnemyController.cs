@@ -1,8 +1,10 @@
 using UnityEngine;
+using UnityEngine.AI;
 using ActionSample.StateMachine;
 
 namespace ActionSample
 {
+    [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyController : MonoBehaviour
     {
         [Header("Settings")]
@@ -11,6 +13,7 @@ namespace ActionSample
         public Transform[] Waypoints;
 
         // Components
+        public NavMeshAgent NavAgent { get; private set; }
         public MeshRenderer MeshRenderer { get; private set; }
         public Color OriginalColor { get; private set; }
 
@@ -22,6 +25,10 @@ namespace ActionSample
 
         private void Awake()
         {
+            NavAgent = GetComponent<NavMeshAgent>();
+            // Ensure speed is synced with NavMeshAgent
+            NavAgent.speed = MoveSpeed;
+
             MeshRenderer = GetComponent<MeshRenderer>();
             if (MeshRenderer != null)
             {
