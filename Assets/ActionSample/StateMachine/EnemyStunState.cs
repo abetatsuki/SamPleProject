@@ -13,6 +13,13 @@ namespace ActionSample.StateMachine
             base.Enter();
             timer = ctx.StunDuration;
             
+            // Stop agent if it exists
+            if (ctx.NavAgent != null && ctx.NavAgent.isActiveAndEnabled)
+            {
+                ctx.NavAgent.isStopped = true;
+                ctx.NavAgent.velocity = Vector3.zero;
+            }
+
             if (ctx.MeshRenderer != null)
             {
                 ctx.MeshRenderer.material.color = Color.blue;
