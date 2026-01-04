@@ -27,7 +27,14 @@ namespace ActionSample.StateMachine
 
             if (timer <= 0f)
             {
-                ctx.StateMachine.ChangeState(ctx.IdleState);
+                if (ctx.Waypoints != null && ctx.Waypoints.Length > 0)
+                {
+                    ctx.StateMachine.ChangeState(ctx.PatrolState);
+                }
+                else
+                {
+                    ctx.StateMachine.ChangeState(ctx.IdleState);
+                }
             }
         }
 
