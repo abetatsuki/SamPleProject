@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ActionSample.StateMachine;
 
 namespace ActionSample
@@ -21,6 +21,7 @@ namespace ActionSample
         public PlayerInputHandler InputHandler { get; private set; }
         public PlayerAiming Aiming { get; private set; }
         public StateMachine.StateMachine StateMachine { get; private set; }
+        public bool IsSliding => StateMachine.CurrentState == SlideState;
 
         // ステートのインスタンス
         public PlayerIdleState IdleState { get; private set; }
