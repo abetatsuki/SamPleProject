@@ -10,6 +10,7 @@ namespace ActionSample
     {
         [Header("Movement Settings")]
         public float MoveSpeed = 5f;
+        public float AimMoveSpeed = 2.5f;
 
         [Header("Slide Settings")]
         public float SlideSpeed = 15f;
