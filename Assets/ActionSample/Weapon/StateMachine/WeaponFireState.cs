@@ -32,11 +32,53 @@ namespace ActionSample.Weapon.StateMachine
             ctx.CurrentAmmo--;
             nextFireTime = Time.time + ctx.FireRate;
 
-            // Firing Logic (Raycast, Projectile, etc.)
-            Debug.Log($"Bang! Ammo: {ctx.CurrentAmmo}");
+            // 画面真ん中（カメラの前方）へのレイキャスト
+            Ray ray = ctx.MainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            Vector3 targetPoint;
             
-            // Visuals (Muzzle Flash, Recoil) would go here
-            // ctx.ApplyRecoil();
+            // 実際にレイを飛ばして着弾点を計算
+            if (Physics.Raycast(ray, out RaycastHit hit, ctx.Range))
+            {
+                targetPoint = hit.point;
+            }
+            else
+            {
+                targetPoint = ray.origin + ray.direction * ctx.Range;
+            }
+
+            // 弾の生成 (Muzzleがある場合のみ)
+            if (ctx.BulletPrefab != null && ctx.Muzzle != null)
+            {
+                GameObject bulletObj = Object.Instantiate(ctx.BulletPrefab, ctx.Muzzle.position, Quaternion.identity);
+                Bullet bulletScript = bulletObj.GetComponent<Bullet>();
+                
+                // Muzzleから着弾点への方向ベクトル
+                Vector3 shootDir = (targetPoint - ctx.Muzzle.position).normalized;
+
+                if (bulletScript != null)
+                {
+                    bulletScript.Initialize(shootDir, ctx.Damage);
+                }
+            }
+            else
+            {
+                // Instant Hit Logic if no bullet prefab (Previous Raycast Logic kept as fallback or combined)
+                if (hit.collider != null)
+                {
+                    EnemyController enemy = hit.collider.GetComponent<EnemyController>();
+                    if (enemy != null)
+                    {
+                         enemy.StateMachine.ChangeState(enemy.StunState);
+                    }
+                }
+                
+                if (ctx.Muzzle != null)
+                {
+                    Debug.DrawLine(ctx.Muzzle.position, targetPoint, Color.yellow, 0.1f);
+                }
+            }
+
+            Debug.Log($"Bang! Ammo: {ctx.CurrentAmmo}");
         }
     }
 }
