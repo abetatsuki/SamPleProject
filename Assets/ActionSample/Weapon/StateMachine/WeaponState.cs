@@ -1,8 +1,9 @@
 using UnityEngine;
+using ActionSample.StateMachine;
 
 namespace ActionSample.Weapon.StateMachine
 {
-    public abstract class WeaponState : IWeaponState
+    public abstract class WeaponState : IState
     {
         protected WeaponController ctx;
 
@@ -14,5 +15,6 @@ namespace ActionSample.Weapon.StateMachine
         public virtual void Enter() { }
         public virtual void Exit() { }
         public virtual void LogicUpdate() { }
+        public virtual void PhysicsUpdate() { }
     }
 }
