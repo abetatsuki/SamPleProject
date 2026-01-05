@@ -26,8 +26,9 @@ namespace ActionSample.StateMachine
         {
             base.PhysicsUpdate();
             
-            // 移動処理
-            Vector3 targetVelocity = ctx.InputHandler.MovementInput * ctx.MoveSpeed;
+            // 移動処理 (カメラ/プレイヤーの向きに合わせて移動)
+            Vector3 worldInput = ctx.transform.TransformDirection(ctx.InputHandler.MovementInput);
+            Vector3 targetVelocity = worldInput * ctx.MoveSpeed;
             targetVelocity.y = ctx.Rigidbody.linearVelocity.y; // 重力落下維持
             ctx.Rigidbody.linearVelocity = targetVelocity;
         }
