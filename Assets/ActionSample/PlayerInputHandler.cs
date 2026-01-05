@@ -7,7 +7,7 @@ namespace ActionSample
         public Vector3 MovementInput { get; private set; }
         public bool AimInput { get; private set; }
         public bool SlideTriggered { get; private set; }
-        public Vector3 MousePosition { get; private set; }
+        public Vector2 LookInput { get; private set; }
         public bool ReloadInput {get; private set; }
         public bool FireInput { get; private set; }
 
@@ -17,11 +17,13 @@ namespace ActionSample
             float x = Input.GetAxisRaw("Horizontal");
             float z = Input.GetAxisRaw("Vertical");
             MovementInput = new Vector3(x, 0, z).normalized;
+            
+            LookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+
             AimInput = Input.GetMouseButton(1);
             ReloadInput = Input.GetKeyDown(KeyCode.R);
             FireInput = Input.GetMouseButton(0);
             SlideTriggered = Input.GetKeyDown(KeyCode.LeftControl);
-            MousePosition = Input.mousePosition;
         }
     }
 }
