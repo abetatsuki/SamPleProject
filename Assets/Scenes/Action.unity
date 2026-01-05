@@ -1320,6 +1320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionSample.PlayerController
   MoveSpeed: 5
+  AimMoveSpeed: 2.5
   SlideSpeed: 15
   SlideDuration: 0.8
   SlideDrag: 0.5
@@ -1626,6 +1627,7 @@ MonoBehaviour:
   BulletPrefab: {fileID: 2530637846005440131, guid: b6a5aa5689d36284091e45f08c65d94e, type: 3}
   MaxAmmo: 30
   CurrentAmmo: 30
+  TotalAmmo: 90
   FireRate: 0.1
   ReloadTime: 1.5
   Range: 100
@@ -1634,7 +1636,7 @@ MonoBehaviour:
   AdsFov: 50
   AdsSpeed: 10
   HipPosition: {x: 0, y: 0, z: 0}
-  AdsPosition: {x: 0, y: 0.27, z: 0.2}
+  AdsPosition: {x: 0, y: 0.27, z: 0.3}
 --- !u!1 &1929571109
 GameObject:
   m_ObjectHideFlags: 0
