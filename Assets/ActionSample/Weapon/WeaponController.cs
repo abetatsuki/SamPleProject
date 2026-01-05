@@ -14,6 +14,7 @@ namespace ActionSample
         [Header("Weapon Stats")]
         public int MaxAmmo = 30;
         public int CurrentAmmo;
+        public int TotalAmmo = 90;
         public float FireRate = 0.1f; // Seconds between shots
         public float ReloadTime = 1.5f;
         public float Range = 100f;
