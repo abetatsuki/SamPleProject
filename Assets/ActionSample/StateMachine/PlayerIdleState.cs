@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ActionSample.StateMachine
 {
@@ -21,6 +21,10 @@ namespace ActionSample.StateMachine
             if (ctx.InputHandler.MovementInput.sqrMagnitude > 0.01f)
             {
                 ctx.StateMachine.ChangeState(ctx.WalkState);
+            }
+            if(ctx.InputHandler.SlideTriggered)
+            {
+                ctx.StateMachine.ChangeState(ctx.SlideState);
             }
         }
     }
