@@ -1,41 +1,38 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ActionSample
 {
     public class PlayerAiming : MonoBehaviour
     {
-        [SerializeField] private LineRenderer lineRenderer;
-        private Camera _mainCamera;
+        [Header("Look Settings")]
+        public float MouseSensitivity = 2.0f;
+        public float MaxLookAngle = 80f;
+        [SerializeField]
+        private Transform _mainCamera;
+        private float _currentPitch = 0f;
 
         private void Awake()
         {
-            _mainCamera = Camera.main;
-            if (lineRenderer == null)
-                lineRenderer = GetComponentInChildren<LineRenderer>();
+            
+            // FPS視点ではカーソルをロックするのが一般的
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
-        public void UpdateAiming(Vector3 mousePosition)
+        public void UpdateLook(Vector2 lookInput)
         {
-            Ray ray = _mainCamera.ScreenPointToRay(mousePosition);
-            
-            // 画面上のマウス位置へレイを飛ばす
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f))
-            {
-                Vector3 startPosition = transform.position + Vector3.up * 0.5f;
-                Vector3 endPosition = hitInfo.point;
+            if (_mainCamera == null) return;
 
-                if (lineRenderer != null)
-                {
-                    lineRenderer.enabled = true;
-                    lineRenderer.positionCount = 2;
-                    lineRenderer.SetPosition(0, startPosition);
-                    lineRenderer.SetPosition(1, endPosition);
-                }
-            }
-            else
-            {
-                if (lineRenderer != null) lineRenderer.enabled = false;
-            }
+            // 水平回転 (Player Body)
+            float yaw = lookInput.x * MouseSensitivity;
+            transform.Rotate(0, yaw, 0);
+
+            // 垂直回転 (Camera)
+            float pitchDelta = -lookInput.y * MouseSensitivity;
+            _currentPitch += pitchDelta;
+            _currentPitch = Mathf.Clamp(_currentPitch, -MaxLookAngle, MaxLookAngle);
+
+            _mainCamera.transform.localEulerAngles = new Vector3(_currentPitch, 0, 0);
         }
     }
 }
