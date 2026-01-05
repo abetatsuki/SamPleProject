@@ -51,8 +51,8 @@ namespace ActionSample
             // 現在のステートのロジック更新
             StateMachine.CurrentState.LogicUpdate();
 
-            // 照準はステートに関わらず更新（必要ならステート内に移動も可）
-            Aiming.UpdateAiming(InputHandler.MousePosition);
+            // 照準(視点)はステートに関わらず更新
+            Aiming.UpdateLook(InputHandler.LookInput);
         }
 
         private void FixedUpdate()
