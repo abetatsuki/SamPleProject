@@ -24,8 +24,13 @@ namespace ActionSample.Weapon.StateMachine
 
             if (reloadTimer <= 0f)
             {
-                ctx.CurrentAmmo = ctx.MaxAmmo;
-                Debug.Log("Reload Complete!");
+                int ammoNeeded = ctx.MaxAmmo - ctx.CurrentAmmo;
+                int ammoToLoad = Mathf.Min(ammoNeeded, ctx.TotalAmmo);
+
+                ctx.CurrentAmmo += ammoToLoad;
+                ctx.TotalAmmo -= ammoToLoad;
+
+                Debug.Log($"Reload Complete! Ammo: {ctx.CurrentAmmo}/{ctx.TotalAmmo}");
                 ctx.StateMachine.ChangeState(ctx.IdleState);
             }
         }
