@@ -28,7 +28,7 @@ namespace ActionSample
         public Vector3 AdsPosition;
 
         // State Machine
-        public WeaponStateMachine StateMachine { get; private set; }
+        public StateMachine.StateMachine StateMachine { get; private set; }
         public WeaponIdleState IdleState { get; private set; }
         public WeaponFireState FireState { get; private set; }
         public WeaponReloadState ReloadState { get; private set; }
@@ -39,7 +39,7 @@ namespace ActionSample
             if (MainCamera == null) MainCamera = Camera.main;
 
             // Initialize State Machine
-            StateMachine = new WeaponStateMachine();
+            StateMachine = new StateMachine.StateMachine();
             IdleState = new WeaponIdleState(this);
             FireState = new WeaponFireState(this);
             ReloadState = new WeaponReloadState(this);
