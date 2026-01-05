@@ -8,12 +8,16 @@ namespace ActionSample
         [Header("References")]
         public PlayerInputHandler InputHandler;
         public Camera MainCamera;
+        public Transform Muzzle;
+        public GameObject BulletPrefab;
 
         [Header("Weapon Stats")]
         public int MaxAmmo = 30;
         public int CurrentAmmo;
         public float FireRate = 0.1f; // Seconds between shots
         public float ReloadTime = 1.5f;
+        public float Range = 100f;
+        public float Damage = 10f;
 
         [Header("ADS Settings")]
         public float NormalFov = 60f;
