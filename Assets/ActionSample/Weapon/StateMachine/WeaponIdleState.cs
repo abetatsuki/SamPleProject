@@ -18,7 +18,7 @@ namespace ActionSample.Weapon.StateMachine
             // Reload Input
             if (ctx.InputHandler.ReloadInput)
             {
-                if (ctx.CurrentAmmo < ctx.MaxAmmo)
+                if (ctx.CurrentAmmo < ctx.MaxAmmo && ctx.TotalAmmo > 0)
                 {
                     ctx.StateMachine.ChangeState(ctx.ReloadState);
                     return;
@@ -32,10 +32,10 @@ namespace ActionSample.Weapon.StateMachine
                 {
                     ctx.StateMachine.ChangeState(ctx.FireState);
                 }
-                else
+                else if (ctx.TotalAmmo > 0)
                 {
                     // Empty Click sound?
-                    // Auto Reload?
+                    // Auto Reload if we have spare ammo
                     ctx.StateMachine.ChangeState(ctx.ReloadState);
                 }
             }
