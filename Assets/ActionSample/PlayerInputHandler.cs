@@ -4,6 +4,11 @@ namespace ActionSample
 {
     public class PlayerInputHandler : MonoBehaviour
     {
+        private const string HorizontalAxis = "Horizontal";
+        private const string VerticalAxis = "Vertical";
+        private const string MouseXAxis = "Mouse X";
+        private const string MouseYAxis = "Mouse Y";
+
         public Vector3 MovementInput { get; private set; }
         public bool AimInput { get; private set; }
         public bool SlideTriggered { get; private set; }
@@ -14,11 +19,11 @@ namespace ActionSample
         private void Update()
         {
             // 入力の取得
-            float x = Input.GetAxisRaw("Horizontal");
-            float z = Input.GetAxisRaw("Vertical");
+            float x = Input.GetAxisRaw(HorizontalAxis);
+            float z = Input.GetAxisRaw(VerticalAxis);
             MovementInput = new Vector3(x, 0, z).normalized;
             
-            LookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            LookInput = new Vector2(Input.GetAxis(MouseXAxis), Input.GetAxis(MouseYAxis));
 
             AimInput = Input.GetMouseButton(1);
             ReloadInput = Input.GetKeyDown(KeyCode.R);

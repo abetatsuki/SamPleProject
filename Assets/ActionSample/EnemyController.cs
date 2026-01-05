@@ -66,7 +66,7 @@ namespace ActionSample
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (!collision.gameObject.CompareTag("Player")) return;
+            if (!collision.gameObject.CompareTag(GameConstants.PlayerTag)) return;
             
             PlayerController player = collision.gameObject.GetComponent<PlayerController>();
             
