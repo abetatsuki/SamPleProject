@@ -28,7 +28,11 @@ namespace ActionSample.StateMachine
             
             // 移動処理 (カメラ/プレイヤーの向きに合わせて移動)
             Vector3 worldInput = ctx.transform.TransformDirection(ctx.InputHandler.MovementInput);
-            Vector3 targetVelocity = worldInput * ctx.MoveSpeed;
+            
+            // エイム中は速度を落とす
+            float currentSpeed = ctx.InputHandler.AimInput ? ctx.AimMoveSpeed : ctx.MoveSpeed;
+            
+            Vector3 targetVelocity = worldInput * currentSpeed;
             targetVelocity.y = ctx.Rigidbody.linearVelocity.y; // 重力落下維持
             ctx.Rigidbody.linearVelocity = targetVelocity;
         }
