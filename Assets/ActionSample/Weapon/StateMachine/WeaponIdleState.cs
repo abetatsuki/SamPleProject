@@ -2,41 +2,61 @@
 
 namespace ActionSample.Weapon.StateMachine
 {
+    /// <summary>
+    /// 武器の待機状態を表すステート。
+    /// 入力を監視し、射撃（Fire）またはリロード（Reload）ステートへの遷移を制御します。
+    /// </summary>
     public class WeaponIdleState : WeaponState
     {
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="context">武器コントローラー</param>
         public WeaponIdleState(WeaponController context) : base(context) { }
 
+        /// <summary>
+        /// ステート開始時の処理。
+        /// </summary>
         public override void Enter()
         {
             base.Enter();
         }
 
+        /// <summary>
+        /// フレーム毎のロジック更新。
+        /// </summary>
         public override void LogicUpdate()
         {
             base.LogicUpdate();
 
-            // Reload Input
-            if (ctx.InputHandler.ReloadInput)
+            // リロード入力の判定
+            // なぜこの処理が必要なのか: プレイヤーがRキーを押した時に手動リロードを実行するため
+            if (Context.InputHandler != null && Context.InputHandler.ReloadInput)
             {
-                if (ctx.CurrentAmmo < ctx.MaxAmmo && ctx.TotalAmmo > 0)
+                // 弾が減っていて、かつ予備弾薬がある場合のみリロード可能
+                if (Context.CurrentAmmo < Context.MaxAmmo && Context.TotalAmmo > 0)
                 {
-                    ctx.StateMachine.ChangeState(ctx.ReloadState);
+                    Context.StateMachine.ChangeState(Context.ReloadState);
                     return;
                 }
             }
 
-            // Fire Input
-            if (ctx.InputHandler.FireInput)
+            // 射撃入力の判定
+            // なぜこの処理が必要なのか: プレイヤーが攻撃ボタンを押した時に射撃を実行するため
+            if (Context.InputHandler != null && Context.InputHandler.FireInput)
             {
-                if (ctx.CurrentAmmo > 0)
+                // マガジンに弾がある場合は射撃へ
+                if (Context.CurrentAmmo > 0)
                 {
-                    ctx.StateMachine.ChangeState(ctx.FireState);
+                    Context.StateMachine.ChangeState(Context.FireState);
                 }
-                else if (ctx.TotalAmmo > 0)
+                // 弾切れだが予備弾薬はある場合
+                else if (Context.TotalAmmo > 0)
                 {
-                    // Empty Click sound?
-                    // Auto Reload if we have spare ammo
-                    ctx.StateMachine.ChangeState(ctx.ReloadState);
+                    // 空撃ち音（カチッ）を鳴らす処理をここに入れるか、
+                    // または自動リロードを行う
+                    // ここでは自動リロードへの遷移を採用
+                    Context.StateMachine.ChangeState(Context.ReloadState);
                 }
             }
         }

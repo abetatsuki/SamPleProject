@@ -2,58 +2,90 @@ using UnityEngine;
 
 namespace ActionSample.StateMachine
 {
+    /// <summary>
+    /// 敵の気絶状態を表すステート。
+    /// 一定時間行動不能にし、見た目（色）を変え、時間が経過したら元の状態に戻します。
+    /// </summary>
     public class EnemyStunState : EnemyState
     {
-        private float timer;
-
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="context">敵コントローラー</param>
         public EnemyStunState(EnemyController context) : base(context) { }
 
+        /// <summary>
+        /// ステート開始時の処理。
+        /// </summary>
         public override void Enter()
         {
             base.Enter();
-            timer = ctx.StunDuration;
             
-            // Stop agent if it exists
-            if (ctx.NavAgent != null && ctx.NavAgent.isActiveAndEnabled)
+            // 気絶時間を設定
+            _timer = Context.StunDuration;
+            
+            // エージェントの移動を完全に停止
+            // なぜこの処理が必要なのか: 気絶中は一切動けないようにするため。速度もゼロにする。
+            if (Context.NavAgent != null && Context.NavAgent.isActiveAndEnabled)
             {
-                ctx.NavAgent.isStopped = true;
-                ctx.NavAgent.velocity = Vector3.zero;
+                Context.NavAgent.isStopped = true;
+                Context.NavAgent.velocity = Vector3.zero;
             }
 
-            if (ctx.MeshRenderer != null)
+            // 見た目の変化（青色にする）
+            // なぜこの処理が必要なのか: プレイヤーに気絶中であることを視覚的に伝えるため
+            if (Context.MeshRenderer != null)
             {
-                ctx.MeshRenderer.material.color = Color.blue;
+                Context.MeshRenderer.material.color = Color.blue;
             }
+            
+            // デバッグ用ログ（開発確認用）
             Debug.Log("Enemy Entered Stun State");
         }
 
-        public override void LogicUpdate()
-        {
-            base.LogicUpdate();
-            timer -= Time.deltaTime;
-
-            if (timer <= 0f)
-            {
-                if (ctx.Waypoints != null && ctx.Waypoints.Length > 0)
-                {
-                    ctx.StateMachine.ChangeState(ctx.PatrolState);
-                }
-                else
-                {
-                    ctx.StateMachine.ChangeState(ctx.IdleState);
-                }
-            }
-        }
-
+        /// <summary>
+        /// ステート終了時の処理。
+        /// </summary>
         public override void Exit()
         {
             base.Exit();
             
-            if (ctx.MeshRenderer != null)
+            // 色を元に戻す
+            // なぜこの処理が必要なのか: 気絶状態が終わったことを視覚的に反映するため
+            if (Context.MeshRenderer != null)
             {
-                ctx.MeshRenderer.material.color = ctx.OriginalColor;
+                Context.MeshRenderer.material.color = Context.OriginalColor;
             }
+            
+            // デバッグ用ログ（開発確認用）
             Debug.Log("Enemy Exited Stun State");
         }
+
+        /// <summary>
+        /// フレーム毎のロジック更新。
+        /// </summary>
+        public override void LogicUpdate()
+        {
+            base.LogicUpdate();
+            
+            // タイマー減算
+            _timer -= Time.deltaTime;
+
+            // 気絶時間の終了判定
+            // なぜこの処理が必要なのか: 一定時間経過後に敵を行動可能な状態（巡回または待機）に復帰させるため
+            if (_timer <= 0f)
+            {
+                if (Context.Waypoints != null && Context.Waypoints.Length > 0)
+                {
+                    Context.StateMachine.ChangeState(Context.PatrolState);
+                }
+                else
+                {
+                    Context.StateMachine.ChangeState(Context.IdleState);
+                }
+            }
+        }
+
+        private float _timer;
     }
 }

@@ -10,6 +10,12 @@ namespace ActionSample
     public class GunVisualRecoilProcessor
     {
         /// <summary>
+        /// 現在適用すべきリコイルのオフセット位置。
+        /// 毎フレーム変動するため、この値を Transform.localPosition 等に加算して使用してください。
+        /// </summary>
+        public Vector3 CurrentOffset { get; private set; }
+
+        /// <summary>
         /// コンストラクタ。リコイルの挙動設定を行います。
         /// </summary>
         /// <param name="returnSpeed">リコイルが元の位置に戻る速度（減衰速度）。値が大きいほど早く戻ります。</param>
@@ -21,12 +27,6 @@ namespace ActionSample
             _snappiness = snappiness;
             _maxRecoil = maxRecoil;
         }
-
-        /// <summary>
-        /// 現在適用すべきリコイルのオフセット位置。
-        /// 毎フレーム変動するため、この値を Transform.localPosition 等に加算して使用してください。
-        /// </summary>
-        public Vector3 CurrentOffset { get; private set; }
 
         /// <summary>
         /// リコイル（反動）を発生させます。
@@ -66,11 +66,8 @@ namespace ActionSample
         }
 
         private readonly float _returnSpeed;
-
         private readonly float _snappiness;
-
         private readonly Vector3 _maxRecoil;
-
         private Vector3 _targetRecoil;
     }
 }

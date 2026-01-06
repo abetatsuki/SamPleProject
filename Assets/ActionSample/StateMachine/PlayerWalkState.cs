@@ -2,39 +2,65 @@ using UnityEngine;
 
 namespace ActionSample.StateMachine
 {
+    /// <summary>
+    /// プレイヤーの歩行（移動）状態を表すステート。
+    /// 入力に応じた移動処理と、待機・スライディングへの遷移判定を行います。
+    /// </summary>
     public class PlayerWalkState : PlayerState
     {
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="context">プレイヤーコントローラー</param>
         public PlayerWalkState(PlayerController context) : base(context) { }
 
+        /// <summary>
+        /// フレーム毎のロジック更新。
+        /// </summary>
         public override void LogicUpdate()
         {
             base.LogicUpdate();
 
-            // 入力がなくなったらIdleへ
-            if (ctx.InputHandler.MovementInput.sqrMagnitude < 0.01f)
+            // 入力判定：移動入力がなくなったらIdleへ
+            // なぜこの処理が必要なのか: プレイヤーがキーを離した瞬間に移動を止め、待機状態に戻すため
+            if (Context.InputHandler.MovementInput.sqrMagnitude < 0.01f)
             {
-                ctx.StateMachine.ChangeState(ctx.IdleState);
+                Context.StateMachine.ChangeState(Context.IdleState);
             }
-            // スライディング入力があればSlideへ
-            else if (ctx.InputHandler.SlideTriggered)
+            // 入力判定：スライディング入力があればSlideへ
+            // なぜこの処理が必要なのか: 移動中からのスライディングアクションへの割り込みを許可するため
+            else if (Context.InputHandler.SlideTriggered)
             {
-                ctx.StateMachine.ChangeState(ctx.SlideState);
+                Context.StateMachine.ChangeState(Context.SlideState);
             }
         }
 
+        /// <summary>
+        /// 物理演算の更新（移動処理）。
+        /// </summary>
         public override void PhysicsUpdate()
         {
             base.PhysicsUpdate();
             
-            // 移動処理 (カメラ/プレイヤーの向きに合わせて移動)
-            Vector3 worldInput = ctx.transform.TransformDirection(ctx.InputHandler.MovementInput);
+            // ローカル入力ベクトルをワールド座標系に変換
+            // なぜこの処理が必要なのか: プレイヤーの現在の向き（またはカメラの向き）に基づいた方向に移動させるため
+            // Context.transform.TransformDirection はローカル(X, Z)をワールド方向へ変換する
+            Vector3 worldInput = Context.transform.TransformDirection(Context.InputHandler.MovementInput);
             
-            // エイム中は速度を落とす
-            float currentSpeed = ctx.InputHandler.AimInput ? ctx.AimMoveSpeed : ctx.MoveSpeed;
+            // 現在の移動速度を決定
+            // なぜこの処理が必要なのか: エイム中（構え中）は精密な操作が必要なため、通常より遅い移動速度を適用するため
+            float currentSpeed = Context.InputHandler.AimInput ? Context.AimMoveSpeed : Context.MoveSpeed;
             
+            // ターゲット速度の計算
             Vector3 targetVelocity = worldInput * currentSpeed;
-            targetVelocity.y = ctx.Rigidbody.linearVelocity.y; // 重力落下維持
-            ctx.Rigidbody.linearVelocity = targetVelocity;
+            
+            // Y軸（重力）の維持
+            // なぜこの処理が必要なのか: 移動計算でY軸を上書きしてしまうと、落下やジャンプができなくなるため
+            // 既存のY軸速度（重力加速度の結果）をそのまま適用する
+            targetVelocity.y = Context.Rigidbody.linearVelocity.y; 
+            
+            // 最終的な速度をRigidbodyに適用
+            Context.Rigidbody.linearVelocity = targetVelocity;
         }
     }
 }

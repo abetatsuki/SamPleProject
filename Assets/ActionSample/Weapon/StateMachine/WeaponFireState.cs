@@ -2,86 +2,119 @@
 
 namespace ActionSample.Weapon.StateMachine
 {
+    /// <summary>
+    /// 武器の発射状態を表すステート。
+    /// 弾丸の発射処理、リコイル適用、連射制御を行います。
+    /// </summary>
     public class WeaponFireState : WeaponState
     {
-        private float nextFireTime;
-
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="context">武器コントローラー</param>
         public WeaponFireState(WeaponController context) : base(context) { }
 
+        /// <summary>
+        /// ステート開始時の処理。
+        /// </summary>
         public override void Enter()
         {
             base.Enter();
+            // 発射処理を実行
             Fire();
         }
 
+        /// <summary>
+        /// フレーム毎のロジック更新。
+        /// </summary>
         public override void LogicUpdate()
         {
             base.LogicUpdate();
             
-            // Wait for fire rate
-            if (Time.time >= nextFireTime)
+            // 連射間隔（レート）のチェック
+            // なぜこの処理が必要なのか: 一瞬で弾を撃ち尽くさないように、次の発射までの待機時間を設けるため
+            if (Time.time >= _nextFireTime)
             {
-                // If button held (Automatic) or just finished (Semi-Auto logic handled by transitions)
-                // For now, simple return to Idle to re-check input
-                ctx.StateMachine.ChangeState(ctx.IdleState);
+                // 連射待機時間が過ぎたら、一度アイドル状態に戻る
+                // なぜこの処理が必要なのか: ここでIdleに戻ることで、Inputチェックを再度行い、押しっぱなしなら再度FireStateへ遷移するループを作るため
+                // （セミオートの場合はここでトリガーリセット待ちなどのロジックを追加可能）
+                Context.StateMachine.ChangeState(Context.IdleState);
             }
         }
 
+        private float _nextFireTime;
+
+        /// <summary>
+        /// 実際の射撃処理を行います。
+        /// </summary>
         private void Fire()
         {
-            ctx.CurrentAmmo--;
-            nextFireTime = Time.time + ctx.FireRate;
+            // 弾薬を消費
+            Context.CurrentAmmo--;
+            
+            // 次の発射可能時間を設定
+            // なぜこの処理が必要なのか: 連射速度（FireRate）に基づいてインターバルを計算するため
+            _nextFireTime = Time.time + Context.FireRate;
 
             // リコイル適用
-            ctx.ApplyRecoil();
+            // なぜこの処理が必要なのか: 射撃の反動をカメラや武器モデルに反映するため
+            Context.ApplyRecoil();
 
-            // 画面真ん中（カメラの前方）へのレイキャスト
-            Ray ray = ctx.MainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            // 画面中心（照準）に向かってレイを飛ばす準備
+            // ViewportPointToRay(0.5, 0.5) は画面中央を指す
+            Ray ray = Context.MainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             Vector3 targetPoint;
             
-            // 実際にレイを飛ばして着弾点を計算
-            if (Physics.Raycast(ray, out RaycastHit hit, ctx.Range))
+            // レイキャストを実行して着弾点を計算
+            // なぜこの処理が必要なのか: 実際に何かに当たった場所に向かって弾を飛ばすため（クロスヘアの指す場所へ飛ばす）
+            if (Physics.Raycast(ray, out RaycastHit hit, Context.Range))
             {
                 targetPoint = hit.point;
             }
             else
             {
-                targetPoint = ray.origin + ray.direction * ctx.Range;
+                // 何にも当たらなかった場合は射程距離の限界地点をターゲットにする
+                targetPoint = ray.origin + ray.direction * Context.Range;
             }
 
             // 弾の生成 (Muzzleがある場合のみ)
-            if (ctx.BulletPrefab != null && ctx.Muzzle != null)
+            if (Context.BulletPrefab != null && Context.Muzzle != null)
             {
-                GameObject bulletObj = Object.Instantiate(ctx.BulletPrefab, ctx.Muzzle.position, Quaternion.identity);
+                GameObject bulletObj = Object.Instantiate(Context.BulletPrefab, Context.Muzzle.position, Quaternion.identity);
                 Bullet bulletScript = bulletObj.GetComponent<Bullet>();
                 
-                // Muzzleから着弾点への方向ベクトル
-                Vector3 shootDir = (targetPoint - ctx.Muzzle.position).normalized;
+                // Muzzleから着弾点への方向ベクトルを計算
+                // なぜこの処理が必要なのか: 銃口からターゲットへ向かって一直線に弾を飛ばすため
+                Vector3 shootDir = (targetPoint - Context.Muzzle.position).normalized;
 
                 if (bulletScript != null)
                 {
-                    bulletScript.Initialize(shootDir, ctx.Damage);
+                    bulletScript.Initialize(shootDir, Context.Damage);
                 }
             }
             else
             {
-                // Instant Hit Logic if no bullet prefab (Previous Raycast Logic kept as fallback or combined)
+                // 弾プレハブがない場合の即着弾ロジック（ヒットスキャン）
+                // フォールバック用として実装
                 if (hit.collider != null)
                 {
                     EnemyController enemy = hit.collider.GetComponent<EnemyController>();
                     if (enemy != null)
                     {
+                         // 敵にヒットした処理
                          enemy.StateMachine.ChangeState(enemy.StunState);
                     }
                 }
                 
-                if (ctx.Muzzle != null)
+                // デバッグ描画
+                if (Context.Muzzle != null)
                 {
-                    Debug.DrawLine(ctx.Muzzle.position, targetPoint, Color.yellow, 0.1f);
+                    Debug.DrawLine(Context.Muzzle.position, targetPoint, Color.yellow, 0.1f);
                 }
             }
 
-            Debug.Log($"Bang! Ammo: {ctx.CurrentAmmo}");
+            // デバッグログ
+            Debug.Log($"Bang! Ammo: {Context.CurrentAmmo}");
         }
     }
 }

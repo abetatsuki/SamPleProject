@@ -2,56 +2,92 @@
 
 namespace ActionSample.StateMachine
 {
+    /// <summary>
+    /// プレイヤーのスライディング状態を表すステート。
+    /// 一時的な加速と姿勢制御、およびステート終了時の遷移処理を行います。
+    /// </summary>
     public class PlayerSlideState : PlayerState
     {
-        private float slideTimer;
-
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="context">プレイヤーコントローラー</param>
         public PlayerSlideState(PlayerController context) : base(context) { }
 
+        /// <summary>
+        /// ステート開始時の処理。
+        /// </summary>
         public override void Enter()
         {
             base.Enter();
-            slideTimer = ctx.SlideDuration;
+            
+            // スライディングの持続時間を設定
+            _slideTimer = Context.SlideDuration;
 
-            // スライディング開始 (入力方向 or 前方) - 入力をローカルからワールドへ変換
-            Vector3 worldInput = ctx.InputHandler.MovementInput.magnitude > 0.1f 
-                 ? ctx.transform.TransformDirection(ctx.InputHandler.MovementInput)
-                 : ctx.transform.forward;
+            // スライディング方向の決定
+            // なぜこの処理が必要なのか: 移動入力がある場合はその方向へ、入力がない場合は向いている方向（前方）へ滑らせるため
+            // 入力の有無で分岐し、ローカル入力をワールド座標へ変換する
+            Vector3 worldInput = Context.InputHandler.MovementInput.magnitude > 0.1f 
+                 ? Context.transform.TransformDirection(Context.InputHandler.MovementInput)
+                 : Context.transform.forward;
 
-            ctx.Rigidbody.linearVelocity = worldInput * ctx.SlideSpeed;
-            ctx.Rigidbody.linearDamping = ctx.SlideDrag;
+            // 初速を与える
+            // なぜこの処理が必要なのか: スライディング特有の瞬間的な加速を表現するため
+            Context.Rigidbody.linearVelocity = worldInput * Context.SlideSpeed;
+            
+            // 空気抵抗（ドラッグ）の設定
+            // なぜこの処理が必要なのか: スライディング後半にかけて徐々に減速させ、自然な停止感を出すため
+            Context.Rigidbody.linearDamping = Context.SlideDrag;
         }
 
+        /// <summary>
+        /// ステート終了時の処理。
+        /// </summary>
         public override void Exit()
         {
             base.Exit();
-            ctx.Rigidbody.linearDamping = 0f;
+            
+            // 空気抵抗をリセット
+            // なぜこの処理が必要なのか: 通常移動（歩行など）に戻った際に、スライディング用の減速設定を引き継がないようにするため
+            Context.Rigidbody.linearDamping = 0f;
         }
 
+        /// <summary>
+        /// フレーム毎のロジック更新。
+        /// </summary>
         public override void LogicUpdate()
         {
             base.LogicUpdate();
             // スライディング中は他の入力を受け付けない（キャンセル等の仕様があればここに追記）
+            // 現状は強制的にタイマー終了まで滑り続ける仕様
         }
 
+        /// <summary>
+        /// 物理演算の更新。
+        /// </summary>
         public override void PhysicsUpdate()
         {
             base.PhysicsUpdate();
 
-            slideTimer -= Time.fixedDeltaTime;
+            // タイマー減算
+            _slideTimer -= Time.fixedDeltaTime;
 
-            if (slideTimer <= 0f)
+            // スライディング終了判定
+            // なぜこの処理が必要なのか: 設定された時間が経過したら、次のアクション（歩行または待機）へ遷移させるため
+            if (_slideTimer <= 0f)
             {
-                // 終了後は、入力があればWalk、なければIdle
-                if (ctx.InputHandler.MovementInput.sqrMagnitude > 0.01f)
+                // 入力があればWalk、なければIdleへ遷移
+                if (Context.InputHandler.MovementInput.sqrMagnitude > 0.01f)
                 {
-                    ctx.StateMachine.ChangeState(ctx.WalkState);
+                    Context.StateMachine.ChangeState(Context.WalkState);
                 }
                 else
                 {
-                    ctx.StateMachine.ChangeState(ctx.IdleState);
+                    Context.StateMachine.ChangeState(Context.IdleState);
                 }
             }
         }
+
+        private float _slideTimer;
     }
 }
