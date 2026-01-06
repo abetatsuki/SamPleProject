@@ -32,6 +32,9 @@ namespace ActionSample.Weapon.StateMachine
             ctx.CurrentAmmo--;
             nextFireTime = Time.time + ctx.FireRate;
 
+            // リコイル適用
+            ctx.ApplyRecoil();
+
             // 画面真ん中（カメラの前方）へのレイキャスト
             Ray ray = ctx.MainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             Vector3 targetPoint;
