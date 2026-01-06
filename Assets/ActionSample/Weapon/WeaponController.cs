@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ActionSample.Weapon.StateMachine;
 
 namespace ActionSample
@@ -22,7 +22,7 @@ namespace ActionSample
         
         [Header("Recoil Settings")]
         public float RecoilVertical = 2.0f;
-        public float RecoilHorizontal = 0.5f;
+        public float RecoilHorizontal = 0.25f;
 
         [Header("ADS Settings")]
         public float NormalFov = 60f;
@@ -38,16 +38,16 @@ namespace ActionSample
         public WeaponReloadState ReloadState { get; private set; }
         
         // Dependencies
-        public PlayerAiming PlayerAiming { get; private set; }
+        public PlayerController PlayerController { get; private set; }
 
         private void Awake()
         {
             CurrentAmmo = MaxAmmo;
             if (MainCamera == null) MainCamera = Camera.main;
 
-            // 親オブジェクト等からPlayerAimingを取得
+            // PlayerControllerを取得
             // 武器がPlayerの子階層にあると想定
-            PlayerAiming = GetComponentInParent<PlayerAiming>();
+            PlayerController = GetComponentInParent<PlayerController>();
 
             // Initialize State Machine
             StateMachine = new StateMachine.StateMachine();
@@ -61,11 +61,11 @@ namespace ActionSample
 
         public void ApplyRecoil()
         {
-            if (PlayerAiming != null)
+            if (PlayerController != null && PlayerController.RecoilController != null)
             {
                 // 横ブレはランダムにする
                 float horizontalRecoil = Random.Range(-RecoilHorizontal, RecoilHorizontal);
-                PlayerAiming.AddRecoil(RecoilVertical, horizontalRecoil);
+                PlayerController.RecoilController.AddRecoil(RecoilVertical, horizontalRecoil);
             }
         }
 
