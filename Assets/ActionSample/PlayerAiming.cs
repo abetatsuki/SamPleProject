@@ -2,37 +2,54 @@
 
 namespace ActionSample
 {
-    public class PlayerAiming : MonoBehaviour
+    /// <summary>
+    /// プレイヤーの視点操作（Aiming）を制御するクラス
+    /// </summary>
+    public class PlayerAiming
     {
-        [Header("Look Settings")]
-        public float MouseSensitivity = 2.0f;
-        public float MaxLookAngle = 80f;
-        [Header("Recoil Settings")]
-        public float RecoilRecoverySpeed = 10f;
-        
-        [SerializeField]
-        private Transform _mainCamera;
-        
-        private float _currentPitch = 0f;
-        private float _recoilPitch = 0f;
-        private float _recoilYaw = 0f;
+        public float MouseSensitivity { get; set; } = 2.0f;
+        public float MaxLookAngle { get; set; } = 80f;
 
-        private void Awake()
+        private Transform _playerBody;
+        private Transform _mainCamera;
+        private RecoilController _recoilController;
+
+        private float _currentPitch = 0f;
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="playerBody">プレイヤーのTransform（水平回転用）</param>
+        /// <param name="mainCamera">カメラのTransform（垂直回転用）</param>
+        /// <param name="recoilController">リコイルコントローラー</param>
+        public PlayerAiming(Transform playerBody, Transform mainCamera, RecoilController recoilController)
         {
-            
+            _playerBody = playerBody;
+            _mainCamera = mainCamera;
+            _recoilController = recoilController;
+
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             // FPS視点ではカーソルをロックするのが一般的
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
+        /// <summary>
+        /// 視点を更新します。
+        /// </summary>
+        /// <param name="lookInput">入力ベクトル</param>
         public void UpdateLook(Vector2 lookInput)
         {
-            if (_mainCamera == null) return;
+            if (_mainCamera == null || _playerBody == null) return;
 
             // 水平回転 (Player Body)
             // リコイルのYaw成分も考慮
             float yaw = lookInput.x * MouseSensitivity;
-            transform.Rotate(0, yaw + _recoilYaw, 0);
+            _playerBody.Rotate(0, yaw + _recoilController.CurrentRecoilYaw, 0);
 
             // 垂直回転 (Camera)
             float pitchDelta = -lookInput.y * MouseSensitivity;
@@ -40,41 +57,19 @@ namespace ActionSample
             _currentPitch = Mathf.Clamp(_currentPitch, -MaxLookAngle, MaxLookAngle);
 
             // リコイル適用後の最終的なPitch
-            float finalPitch = _currentPitch - _recoilPitch; // Recoilは銃が跳ね上がるのでマイナス（上向き）
+            float finalPitch = _currentPitch - _recoilController.CurrentRecoilPitch; // Recoilは銃が跳ね上がるのでマイナス（上向き）
 
-            _mainCamera.transform.localEulerAngles = new Vector3(finalPitch, 0, 0);
-
-            // リコイルの回復
-            RecoverRecoil();
+            _mainCamera.localEulerAngles = new Vector3(finalPitch, 0, 0);
         }
 
         /// <summary>
-        /// リコイルを追加します。
+        /// リコイルを追加します（RecoilControllerへ委譲）。
         /// </summary>
-        /// <param name="vertical">縦方向の跳ね上がり量（正の値）</param>
-        /// <param name="horizontal">横方向のブレ量</param>
+        /// <param name="vertical">縦方向</param>
+        /// <param name="horizontal">横方向</param>
         public void AddRecoil(float vertical, float horizontal)
         {
-            _recoilPitch += vertical;
-            _recoilYaw += horizontal;
-        }
-
-        /// <summary>
-        /// 時間経過とともにリコイルを減衰させます。
-        /// </summary>
-        private void RecoverRecoil()
-        {
-            if (_recoilPitch > 0)
-            {
-                _recoilPitch -= Time.deltaTime * RecoilRecoverySpeed;
-                if (_recoilPitch < 0) _recoilPitch = 0;
-            }
-
-            if (Mathf.Abs(_recoilYaw) > 0)
-            {
-                // 横方向は0に向かって減衰
-                _recoilYaw = Mathf.Lerp(_recoilYaw, 0, Time.deltaTime * RecoilRecoverySpeed);
-            }
+            _recoilController?.AddRecoil(vertical, horizontal);
         }
     }
 }
