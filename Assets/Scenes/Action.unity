@@ -1252,7 +1252,6 @@ GameObject:
   - component: {fileID: 1614633968}
   - component: {fileID: 1614633969}
   - component: {fileID: 1614633973}
-  - component: {fileID: 1614633971}
   - component: {fileID: 1614633970}
   m_Layer: 0
   m_Name: Player
@@ -1324,20 +1323,9 @@ MonoBehaviour:
   SlideSpeed: 15
   SlideDuration: 0.8
   SlideDrag: 0.5
---- !u!114 &1614633971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1614633966}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f76317ba16de154997b22755b4fbc3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ActionSample.PlayerAiming
   MouseSensitivity: 2
   MaxLookAngle: 80
+  RecoilRecoverySpeed: 10
   _mainCamera: {fileID: 1759868253}
 --- !u!114 &1614633973
 MonoBehaviour:
@@ -1627,16 +1615,22 @@ MonoBehaviour:
   BulletPrefab: {fileID: 2530637846005440131, guid: b6a5aa5689d36284091e45f08c65d94e, type: 3}
   MaxAmmo: 30
   CurrentAmmo: 30
-  TotalAmmo: 90
+  TotalAmmo: 22222
   FireRate: 0.1
   ReloadTime: 1.5
   Range: 100
   Damage: 10
+  RecoilVertical: 1
+  RecoilHorizontal: 0.2
   NormalFov: 60
   AdsFov: 50
   AdsSpeed: 10
   HipPosition: {x: 0, y: 0, z: 0}
   AdsPosition: {x: 0, y: 0.27, z: 0.3}
+  VisualReturnSpeed: 10
+  VisualSnappiness: 30
+  VisualRecoilForce: {x: 0, y: 0, z: -0.1}
+  VisualMaxRecoil: {x: 0, y: 0.1, z: 0.01}
 --- !u!1 &1929571109
 GameObject:
   m_ObjectHideFlags: 0
