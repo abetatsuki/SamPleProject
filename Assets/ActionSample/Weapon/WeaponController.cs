@@ -19,6 +19,10 @@ namespace ActionSample
         public float ReloadTime = 1.5f;
         public float Range = 100f;
         public float Damage = 10f;
+        
+        [Header("Recoil Settings")]
+        public float RecoilVertical = 2.0f;
+        public float RecoilHorizontal = 0.5f;
 
         [Header("ADS Settings")]
         public float NormalFov = 60f;
@@ -32,11 +36,18 @@ namespace ActionSample
         public WeaponIdleState IdleState { get; private set; }
         public WeaponFireState FireState { get; private set; }
         public WeaponReloadState ReloadState { get; private set; }
+        
+        // Dependencies
+        public PlayerAiming PlayerAiming { get; private set; }
 
         private void Awake()
         {
             CurrentAmmo = MaxAmmo;
             if (MainCamera == null) MainCamera = Camera.main;
+
+            // 親オブジェクト等からPlayerAimingを取得
+            // 武器がPlayerの子階層にあると想定
+            PlayerAiming = GetComponentInParent<PlayerAiming>();
 
             // Initialize State Machine
             StateMachine = new StateMachine.StateMachine();
@@ -46,6 +57,16 @@ namespace ActionSample
 
             // Set initial position
             if (HipPosition == Vector3.zero) HipPosition = transform.localPosition;
+        }
+
+        public void ApplyRecoil()
+        {
+            if (PlayerAiming != null)
+            {
+                // 横ブレはランダムにする
+                float horizontalRecoil = Random.Range(-RecoilHorizontal, RecoilHorizontal);
+                PlayerAiming.AddRecoil(RecoilVertical, horizontalRecoil);
+            }
         }
 
         private void Start()
