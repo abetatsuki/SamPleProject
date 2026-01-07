@@ -40,6 +40,11 @@ namespace ActionSample
         /// </summary>
         public bool FireInput { get; private set; }
 
+        /// <summary>
+        /// グラップル入力がトリガーされた瞬間の状態。
+        /// </summary>
+        public bool GrappleInput { get; private set; }
+
         private const string HorizontalAxis = "Horizontal";
         private const string VerticalAxis = "Vertical";
         private const string MouseXAxis = "Mouse X";
@@ -68,6 +73,10 @@ namespace ActionSample
             // 射撃入力の判定
             // なぜこの処理が必要なのか: 左クリックが押されている間、連続して射撃を行うため（オート連射などを想定）
             FireInput = Input.GetMouseButton(0);
+
+            // グラップル入力の判定
+            // なぜこの処理が必要なのか: Fキーが押された瞬間にグラップルアクションを開始するため
+            GrappleInput = Input.GetKeyDown(KeyCode.F);
             
             // スライディング入力の判定
             // なぜこの処理が必要なのか: 左Controlキーが押された瞬間に、スライディングアクションをトリガーするため
