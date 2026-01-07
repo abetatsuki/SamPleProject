@@ -1,18 +1,27 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace ActionSample.StateMachine
 {
     /// <summary>
     /// グラップリングアクション中のステート。
-    /// 目標地点への物理移動とステート遷移を管理します。
+    /// 入力時間に応じて「スイング（物理振り子）」と「プル（直線移動）」の2つの挙動を切り替えます。
     /// </summary>
     public class PlayerGrappleState : PlayerState
     {
-        private Vector3 _targetPoint;
-        private bool _isActive;
-        private bool _isMoving; // 移動を開始したかどうかのフラグ
-        private float _elapsedTime;
-        private const float GrappleDuration = 1.0f; // 移動制限時間
+        private enum GrappleMode
+        {
+            Swing, // 物理演算による振り子運動
+            Pull   // ターゲットへの直線吸い寄せ
+        }
+
+        private GrappleMode _currentMode;
+        private float _grappleStartTime;
+        
+        /// <summary>
+        /// 短押し判定の閾値（秒）。
+        /// これより早く離すとプル、押し続けるとスイングになります。
+        /// </summary>
+        private const float TapThreshold = 0.25f;
 
         /// <summary>
         /// コンストラクタ
@@ -22,105 +31,121 @@ namespace ActionSample.StateMachine
 
         /// <summary>
         /// ステート開始時の処理。
-        /// グラップル判定、ビジュアル開始を行います。移動は遅延後に開始します。
         /// </summary>
         public override void Enter()
         {
             base.Enter();
-            _elapsedTime = 0f;
-            _isActive = false;
-            _isMoving = false;
 
-            Debug.Log("Enter Grapple State");
+            // デフォルトはSwingモードで開始
+            // なぜこの処理が必要なのか: ボタンを押した瞬間に物理接続を行い、即座にフィードバック（ロープ生成）を返すため
+            _currentMode = GrappleMode.Swing;
+            _grappleStartTime = Time.time;
 
-            // グラップル地点の探索
-            if (Context.GrappleController.TryGetGrapplePoint(out _targetPoint))
+            // グラップルの開始試行
+            if (!Context.GrappleController.StartGrapple())
             {
-                _isActive = true;
-
-                // まずはラインだけ描画（タメを作る）
-                Context.GrappleController.StartGrappleVisual(_targetPoint);
-
-                // 重力以外の速度を一旦リセットして空中で止まるような演出にするか、
-                // あるいは慣性を残すかは選択によるが、ここでは「掴んだ瞬間」感を出すため少し減速させる
-                Context.Rigidbody.linearVelocity *= 0.5f;
-            }
-            else
-            {
-                Debug.Log("No valid grapple point found. Exiting state.");
-                Context.StateMachine.ChangeState(Context.IdleState);
+                // 失敗したら即終了
+                TransitionToMovementState();
             }
         }
 
         /// <summary>
         /// ステート終了時の処理。
-        /// ビジュアルエフェクトを停止します。
         /// </summary>
         public override void Exit()
         {
             base.Exit();
-            Debug.Log("Exit Grapple State");
-            Context.GrappleController.StopGrappleVisual();
+            // どちらのモードであっても最後は必ずグラップル処理を停止する
+            Context.GrappleController.StopGrapple();
         }
 
         /// <summary>
         /// フレーム毎のロジック更新。
-        /// 遅延後の移動開始処理と終了判定を行います。
+        /// モードに応じた終了判定や遷移判定を行います。
         /// </summary>
         public override void LogicUpdate()
         {
             base.LogicUpdate();
 
-            if (!_isActive) return;
-
-            _elapsedTime += Time.deltaTime;
-
-            // 遅延時間が経過したら移動を開始
-            if (!_isMoving && _elapsedTime >= Context.GrappleController.GrappleDelayTime)
+            if (_currentMode == GrappleMode.Swing)
             {
-                _isMoving = true;
-                StartMovement();
-            }
+                // Swingモード中のロジック：入力解除の監視
 
-            // 移動中の終了判定
-            if (_isMoving)
-            {
-                // 時間経過での終了（遅延時間分を考慮して延長するか、全体時間で切るか）
-                // ここでは全体時間で切る
-                if (_elapsedTime >= GrappleDuration + Context.GrappleController.GrappleDelayTime)
+                // ボタンが離された場合
+                if (!Context.InputHandler.GrappleInputHeld)
                 {
-                    Debug.Log("Grapple time limit reached.");
-                    Context.StateMachine.ChangeState(Context.IdleState);
-                }
+                    float duration = Time.time - _grappleStartTime;
 
-                // 距離判定（ターゲットに接近したら終了）
-                if (Vector3.Distance(Context.transform.position, _targetPoint) < 0.1f)
-                {
-                    Debug.Log("Reached grapple target.");
-                    Context.StateMachine.ChangeState(Context.IdleState);
+                    // 押していた時間が短ければ「Pull」へ移行
+                    // なぜこの処理が必要なのか: プレイヤーが「移動」を意図してチョン押しした場合に対応するため
+                    if (duration < TapThreshold)
+                    {
+                        Debug.Log("Grapple: Switch to Pull Mode");
+                        _currentMode = GrappleMode.Pull;
+                    }
+                    else
+                    {
+                        // 長押ししていた場合は「Swing」終了として扱う（慣性ジャンプ）
+                        Debug.Log("Grapple: End Swing");
+                        TransitionToMovementState();
+                    }
                 }
             }
-        }
-
-        private void StartMovement()
-        {
-            // ジャンプ速度の計算と適用
-            Vector3 velocity = Context.GrappleController.CalculateJumpVelocity(Context.transform.position, _targetPoint);
-
-            if (velocity == Vector3.zero)
+            else if (_currentMode == GrappleMode.Pull)
             {
-                Debug.Log("Grapple velocity is zero. Exiting state.");
-                Context.StateMachine.ChangeState(Context.IdleState);
-                return;
-            }
+                // Pullモード中のロジック：到達判定
 
-            // 移動開始
-            Context.Rigidbody.linearVelocity = velocity;
+                // ターゲットに到達したら終了
+                // なぜこの処理が必要なのか: 直線移動が完了したため
+                if (Context.GrappleController.IsAtGrapplePoint())
+                {
+                    Debug.Log("Grapple: Reached Target");
+                    // 勢いを殺すか残すかは調整次第だが、ここでは少し上に跳ねさせて着地しやすくする
+                    Context.Rigidbody.linearVelocity = Vector3.up * 5f;
+                    TransitionToMovementState();
+                }
+            }
         }
 
         /// <summary>
-        /// 外部（衝突検知など）からこのステートを強制終了させるためのメソッド。
+        /// 物理更新タイミングの処理。
+        /// 現在のモードに応じた物理操作をコントローラーに依頼します。
         /// </summary>
+        public override void PhysicsUpdate()
+        {
+            base.PhysicsUpdate();
 
+            if (_currentMode == GrappleMode.Swing)
+            {
+                // Swing中：Air Control（空中制御）を適用
+                // なぜこの処理が必要なのか: 物理ジョイントにぶら下がっている状態で、プレイヤーの入力を反映させるため
+                float horizontal = Context.InputHandler.MovementInput.x;
+                float vertical = Context.InputHandler.MovementInput.z;
+                Context.GrappleController.ApplyAirControl(horizontal, vertical);
+            }
+            else
+            {
+                // Pull中：ターゲットへの強制移動を実行
+                // なぜこの処理が必要なのか: Rigidbodyの速度を毎フレーム更新して、ターゲットへ誘導するため
+                Context.GrappleController.ExecutePull();
+            }
+        }
+
+        /// <summary>
+        /// 移動系のステートへの遷移を管理します。
+        /// </summary>
+        private void TransitionToMovementState()
+        {
+            // 接地や入力状況に応じて遷移先を決定
+            // 基本的にはIdleかWalkに戻す
+            if (Context.InputHandler.MovementInput != Vector3.zero)
+            {
+                Context.StateMachine.ChangeState(Context.WalkState);
+            }
+            else
+            {
+                Context.StateMachine.ChangeState(Context.IdleState);
+            }
+        }
     }
 }
