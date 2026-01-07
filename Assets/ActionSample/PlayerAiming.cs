@@ -44,10 +44,10 @@ namespace ActionSample
             if (_mainCamera == null || _playerBody == null) return;
 
             // 水平回転 (Player Body)
-            // なぜこの処理が必要なのか: キャラクターの向き自体を変えることで、移動方向も視点に合わせるため
-            // リコイルのYaw成分（横ブレ）も加算して、射撃時のブレを表現する
+            // キャラクターの向き自体を変えることで、移動方向も視点に合わせるため
+            // リコイルのYaw成分（横ブレ）はプレイヤー本体の回転には影響させない
             float yaw = lookInput.x * MouseSensitivity;
-            _playerBody.Rotate(0, yaw + _recoilController.CurrentRecoilYaw, 0);
+            _playerBody.Rotate(0, yaw, 0);
 
             // 垂直回転 (Camera)
             // なぜこの処理が必要なのか: 首の上下運動を表現するため。体全体は回さず、カメラだけを回転させる
