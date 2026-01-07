@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using ActionSample.Input;
 
 namespace ActionSample
 {
@@ -8,6 +9,12 @@ namespace ActionSample
     /// </summary>
     public class PlayerInputHandler : MonoBehaviour
     {
+        /// <summary>
+        /// コンストラクタ。
+        /// MonoBehaviourのため、初期化はAwakeなどで行います。
+        /// </summary>
+        public PlayerInputHandler() { }
+
         /// <summary>
         /// 移動入力ベクトル（正規化済み）。
         /// X: 横移動, Z: 前後移動
@@ -33,7 +40,7 @@ namespace ActionSample
         /// <summary>
         /// リロード入力の状態。
         /// </summary>
-        public bool ReloadInput {get; private set; }
+        public bool ReloadInput { get; private set; }
 
         /// <summary>
         /// 射撃入力の状態。
@@ -45,48 +52,92 @@ namespace ActionSample
         /// </summary>
         public bool GrappleInputHeld { get; private set; }
 
+        /// <summary>
+        /// グラップル入力がトリガーされた瞬間の状態。
+        /// </summary>
         public bool GrappleInput { get; private set; }
 
-        private const string HorizontalAxis = "Horizontal";
-        private const string VerticalAxis = "Vertical";
-        private const string MouseXAxis = "Mouse X";
-        private const string MouseYAxis = "Mouse Y";
+
+        private GameInput _gameInput;
+
+        // トリガー入力の一時保存用フラグ
+        private bool _slideTriggeredBuffer;
+        private bool _reloadInputBuffer;
+        private bool _grappleInputBuffer;
+
+
+        private void Awake()
+        {
+            // Input Systemの初期化
+            // 新しいInput Systemのラッパークラスを生成し、イベントを購読するため
+            _gameInput = new GameInput();
+
+            // 移動入力
+            _gameInput.Move.Performed += v =>
+            {
+                // Vector2(x, y) を Vector3(x, 0, z) に変換
+                MovementInput = new Vector3(v.x, 0, v.y);
+            };
+            _gameInput.Move.Canceled += v => MovementInput = Vector3.zero;
+
+            // 視点操作
+            _gameInput.Look.Performed += v => LookInput = v;
+            _gameInput.Look.Canceled += v => LookInput = Vector2.zero;
+
+            // エイム (長押し)
+            _gameInput.Aim.Started += _ => AimInput = true;
+            _gameInput.Aim.Canceled += _ => AimInput = false;
+
+            // 射撃 (長押し)
+            _gameInput.Fire.Started += _ => FireInput = true;
+            _gameInput.Fire.Canceled += _ => FireInput = false;
+
+            // グラップル (長押し)
+            _gameInput.Grapple.Started += _ => GrappleInputHeld = true;
+            _gameInput.Grapple.Canceled += _ => GrappleInputHeld = false;
+
+            // スライディング (トリガー)
+            _gameInput.Slide.Performed += _ => _slideTriggeredBuffer = true;
+
+            // リロード (トリガー)
+            _gameInput.Reload.Performed += _ => _reloadInputBuffer = true;
+
+            // グラップル (トリガー)
+            _gameInput.Grapple.Performed += _ => _grappleInputBuffer = true;
+        }
+
+        private void OnEnable()
+        {
+            // オブジェクト有効時にInput Systemも有効化するため
+            _gameInput.Enable();
+        }
+
+        private void OnDisable()
+        {
+            // オブジェクト無効時にInput Systemも無効化するため
+            _gameInput.Disable();
+        }
+
+        private void OnDestroy()
+        {
+            // リソースの解放を行うため
+            _gameInput.Dispose();
+        }
 
         private void Update()
         {
-            // 移動入力の取得
-            // なぜこの処理が必要なのか: WASDキーやスティック入力による移動量を取得し、斜め移動の速度超過を防ぐために正規化するため
-            float x = Input.GetAxisRaw(HorizontalAxis);
-            float z = Input.GetAxisRaw(VerticalAxis);
-            MovementInput = new Vector3(x, 0, z).normalized;
-            
-            // 視点移動入力の取得
-            // なぜこの処理が必要なのか: マウスの移動量を取得して、カメラやプレイヤーの回転に反映させるため
-            LookInput = new Vector2(Input.GetAxis(MouseXAxis), Input.GetAxis(MouseYAxis));
+            // トリガー入力の適用とリセット
+            // GetKeyDownのように1フレームだけtrueになる挙動を再現するため
 
-            // エイム入力の判定
-            // なぜこの処理が必要なのか: 右クリック（または対応するボタン）が押されている間、精密射撃モードに切り替えるため
-            AimInput = Input.GetMouseButton(1);
-            
-            // リロード入力の判定
-            // なぜこの処理が必要なのか: Rキーが押された瞬間にリロードアクションを実行するため
-            ReloadInput = Input.GetKeyDown(KeyCode.R);
-            
-            // 射撃入力の判定
-            // なぜこの処理が必要なのか: 左クリックが押されている間、連続して射撃を行うため（オート連射などを想定）
-            FireInput = Input.GetMouseButton(0);
+            SlideTriggered = _slideTriggeredBuffer;
+            _slideTriggeredBuffer = false;
 
-            // グラップル入力の判定
-            // なぜこの処理が必要なのか: Fキーが押された瞬間にグラップルアクションを開始するため
-            GrappleInput = Input.GetKeyDown(KeyCode.F);
+            ReloadInput = _reloadInputBuffer;
+            _reloadInputBuffer = false;
 
-            // グラップル長押し入力の判定
-            // なぜこの処理が必要なのか: Fキーが押されている間、スイング状態を維持するため
-            GrappleInputHeld = Input.GetKey(KeyCode.F);
-            
-            // スライディング入力の判定
-            // なぜこの処理が必要なのか: 左Controlキーが押された瞬間に、スライディングアクションをトリガーするため
-            SlideTriggered = Input.GetKeyDown(KeyCode.LeftControl);
+            GrappleInput = _grappleInputBuffer;
+            _grappleInputBuffer = false;
         }
+
     }
 }
