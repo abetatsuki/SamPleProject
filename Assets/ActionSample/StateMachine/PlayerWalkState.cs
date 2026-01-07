@@ -33,6 +33,12 @@ namespace ActionSample.StateMachine
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
             }
+            // 入力判定：グラップル入力があればGrappleへ
+            // なぜこの処理が必要なのか: 移動中から即座にグラップルアクションへ移行するため
+            else if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
+            {
+                Context.StateMachine.ChangeState(Context.GrappleState);
+            }
         }
 
         /// <summary>
