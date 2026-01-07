@@ -45,6 +45,13 @@ namespace ActionSample.StateMachine
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
             }
+
+            // グラップル入力のチェック
+            // なぜこの処理が必要なのか: 待機状態から即座にグラップルアクションへ移行するため
+            if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
+            {
+                Context.StateMachine.ChangeState(Context.GrappleState);
+            }
         }
     }
 }
