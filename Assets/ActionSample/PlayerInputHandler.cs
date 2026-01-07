@@ -41,8 +41,10 @@ namespace ActionSample
         public bool FireInput { get; private set; }
 
         /// <summary>
-        /// グラップル入力がトリガーされた瞬間の状態。
+        /// グラップル入力が押されている間の状態。
         /// </summary>
+        public bool GrappleInputHeld { get; private set; }
+
         public bool GrappleInput { get; private set; }
 
         private const string HorizontalAxis = "Horizontal";
@@ -77,6 +79,10 @@ namespace ActionSample
             // グラップル入力の判定
             // なぜこの処理が必要なのか: Fキーが押された瞬間にグラップルアクションを開始するため
             GrappleInput = Input.GetKeyDown(KeyCode.F);
+
+            // グラップル長押し入力の判定
+            // なぜこの処理が必要なのか: Fキーが押されている間、スイング状態を維持するため
+            GrappleInputHeld = Input.GetKey(KeyCode.F);
             
             // スライディング入力の判定
             // なぜこの処理が必要なのか: 左Controlキーが押された瞬間に、スライディングアクションをトリガーするため
