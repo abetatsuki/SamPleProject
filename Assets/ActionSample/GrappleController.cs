@@ -3,47 +3,83 @@ using UnityEngine;
 namespace ActionSample
 {
     /// <summary>
-    /// グラップリングフックの機能を管理するクラス。
-    /// レイキャストによる着弾点の検出、移動速度の計算、ロープの描画を担当します。
+    /// 物理的な挙動（振り子運動）を利用したフリースイング型のグラップリングフックを制御するクラス。
+    /// RigidbodyとSpringJointを組み合わせて、プレイヤーの移動補助と姿勢制御を実現します。
     /// </summary>
+    [RequireComponent(typeof(Rigidbody))]
     public class GrappleController : MonoBehaviour
     {
-        [Header("Grappling Settings")]
         /// <summary>
-        /// グラップルの最大距離
+        /// コンストラクタ
+        /// なぜこの処理が必要なのか: MonoBehaviourのインスタンス化はUnityが行うため、明示的な初期化は行いません。
         /// </summary>
-        public float MaxGrappleDistance = 100f;
+        public GrappleController()
+        {
+        }
+
+        /// <summary>
+        /// グラップルが現在接続中かどうかを返します。
+        /// なぜこの処理が必要なのか: ステートマシンや外部クラスが現在のグラップル状態を確認し、適切な挙動（アニメーションや遷移）を行うためです。
+        /// </summary>
+        public bool IsGrappling => _joint != null;
+
+        /// <summary>
+        /// グラップルがヒットした地点を返します。
+        /// なぜこの処理が必要なのか: ロープの描画や、他のシステムがターゲット位置を参照できるようにするためです。
+        /// </summary>
+        public Vector3 GrapplePoint { get; private set; }
+
+        /// <summary>
+        /// グラップルが届く最大距離
+        /// </summary>
+        [Header("Settings")]
+        public float MaxGrappleDistance = 25f;
+
+        /// <summary>
+        /// スイング中の空中操作による加速力
+        /// </summary>
+        public float AirControlForce = 45f;
+
+        /// <summary>
+        /// プル（直線移動）時の速度
+        /// </summary>
+        public float PullSpeed = 30f;
+
+        /// <summary>
+        /// プル移動完了とみなす距離
+        /// </summary>
+        public float StopPullDistance = 2.0f;
+
+        /// <summary>
+        /// ロープのバネ強度（高いほど硬いロープになる）
+        /// </summary>
+        public float JointSpring = 4.5f;
+
+        /// <summary>
+        /// ロープの揺れを減衰させる力
+        /// </summary>
+        public float JointDamper = 7f;
+
+        /// <summary>
+        /// ロープの質量スケール
+        /// </summary>
+        public float JointMassScale = 4.5f;
 
         /// <summary>
         /// グラップル可能なレイヤー
         /// </summary>
+        [Header("References")]
         public LayerMask WhatIsGrappleable;
 
         /// <summary>
-        /// ターゲット位置よりどれだけ高く飛び上がるか（放物線の高さ）
-        /// </summary>
-        public float OvershootYAxis = 2f;
-
-        /// <summary>
-        /// グラップルのクールダウン時間
-        /// </summary>
-        public float GrapplingCooldown = 2.0f;
-
-        /// <summary>
-        /// グラップル着弾から移動開始までの遅延時間
-        /// </summary>
-        public float GrappleDelayTime = 0.2f;
-
-        [Header("References")]
-        /// <summary>
-        /// 発射位置（銃口など）
-        /// </summary>
-        public Transform GunTip;
-
-        /// <summary>
-        /// プレイヤーのカメラ（視線判定用）
+        /// 視界判定用のカメラ
         /// </summary>
         public Transform PlayerCamera;
+
+        /// <summary>
+        /// グラップル発射口のTransform
+        /// </summary>
+        public Transform GunTip;
 
         /// <summary>
         /// ロープ描画用のLineRenderer
@@ -51,152 +87,166 @@ namespace ActionSample
         public LineRenderer LineRenderer;
 
         /// <summary>
-        /// 現在クールダウン中かどうか
+        /// グラップルの開始を試みます。
+        /// なぜこの処理が必要なのか: プレイヤーの入力に応じて、指定された方向にフックを飛ばし、物理的な接続を作成するためです。
         /// </summary>
-        public bool IsCoolingDown { get; private set; }
-
-        private float _cooldownTimer;
-        private Vector3 _grapplePoint;
-
-        private void Awake()
+        /// <returns>グラップルが成功した場合はtrue</returns>
+        public bool StartGrapple()
         {
+            // カメラの前方に向かってレイを飛ばし、接続地点を探す
+            // なぜこの処理が必要なのか: プレイヤーが見ている位置にグラップルを固定するため
+            RaycastHit hit;
+            if (Physics.Raycast(PlayerCamera.position, PlayerCamera.forward, out hit, MaxGrappleDistance, WhatIsGrappleable))
+            {
+                // ヒット地点を保存
+                // なぜこの処理が必要なのか: ジョイントの接続先や描画の終点として使用するため
+                GrapplePoint = hit.point;
+
+                // 物理ジョイントを生成
+                // なぜこの処理が必要なのか: SpringJointを使用することで、振り子のような物理挙動をUnityの物理エンジンに任せるため
+                _joint = gameObject.AddComponent<SpringJoint>();
+                _joint.autoConfigureConnectedAnchor = false;
+                _joint.connectedAnchor = GrapplePoint;
+
+                // 接続時の距離を基準に、ロープの最大・最小長を設定
+                // なぜこの処理が必要なのか: ロープが不自然に伸びすぎるのを防ぎつつ、物理的な張力（テンション）を生み出すため
+                float distanceFromPoint = Vector3.Distance(transform.position, GrapplePoint);
+                _joint.maxDistance = distanceFromPoint * 0.8f; // 少し短めに設定して張力をかける
+                _joint.minDistance = distanceFromPoint * 0.25f;
+
+                // ジョイントの物理パラメータを設定
+                // なぜこの処理が必要なのか: プレイヤーがスイングした際のバウンス感や安定性を調整するため
+                _joint.spring = JointSpring;
+                _joint.damper = JointDamper;
+                _joint.massScale = JointMassScale;
+
+                // ビジュアルの有効化
+                // なぜこの処理が必要なのか: プレイヤーにロープの存在を視覚的に伝えるため
+                if (LineRenderer != null)
+                {
+                    LineRenderer.positionCount = 2;
+                    LineRenderer.enabled = true;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// グラップルを解除します。
+        /// なぜこの処理が必要なのか: 入力が離された際、または障害物に衝突した際に、物理的な拘束を解いて自由落下に移行させるためです。
+        /// </summary>
+        public void StopGrapple()
+        {
+            // ジョイントの破棄
+            // なぜこの処理が必要なのか: 物理的な接続を解除するため
+            if (_joint != null)
+            {
+                Destroy(_joint);
+            }
+
+            // ビジュアルの無効化
+            // なぜこの処理が必要なのか: ロープの表示を消去するため
             if (LineRenderer != null)
             {
-                // ロープの描画座標がずれないようにワールド座標系を使用する設定を強制
-                LineRenderer.useWorldSpace = true;
                 LineRenderer.enabled = false;
             }
         }
 
-        private void Update()
+        /// <summary>
+        /// スイング中の空中操作（移動補助）を適用します。
+        /// なぜこの処理が必要なのか: 物理挙動だけでは操作が難しいため、プレイヤーの入力によって振り子を加速させたり、姿勢を制御したりするためです。
+        /// </summary>
+        /// <param name="horizontal">横方向入力 (-1.0 ~ 1.0)</param>
+        /// <param name="vertical">縦方向入力 (-1.0 ~ 1.0)</param>
+        public void ApplyAirControl(float horizontal, float vertical)
         {
-            // クールダウンタイマーの更新
-            // なぜこの処理が必要なのか: 連続してグラップルを使用できないように制限時間を管理するため
-            if (IsCoolingDown)
+            // 入力がない場合は何もしない
+            // なぜこの処理が必要なのか: 不要な力（ゼロベクトル）の加算を防ぎ、慣性を維持するため
+            if (horizontal == 0 && vertical == 0) return;
+
+            // カメラの向きに基づいた力の方向を計算
+            // なぜこの処理が必要なのか: プレイヤーが向いている方向に対して直感的に操作できるようにするため
+            Vector3 rightForce = PlayerCamera.right * horizontal;
+            Vector3 forwardForce = PlayerCamera.forward * vertical;
+            Vector3 targetDirection = (rightForce + forwardForce).normalized;
+
+            // 加速力を適用
+            // なぜこの処理が必要なのか: ロープに繋がれた状態でこの力を加えると、振り子の「漕ぐ」動作となり、スイングを加速させることができるため
+            _rb.AddForce(targetDirection * AirControlForce, ForceMode.Acceleration);
+
+            // 制約の補足：入力を入れすぎると、進行方向と逆向きになった場合に失速の原因となり、物理法則に則った納得感が生まれる
+        }
+
+        /// <summary>
+        /// ターゲット地点へ直線的にプレイヤーを引き寄せます（プル挙動）。
+        /// なぜこの処理が必要なのか: スイング（物理）ではなく、ワイヤーの巻き取りによる高速移動（非物理的移動）を実現するためです。
+        /// </summary>
+        public void ExecutePull()
+        {
+            // スイング用のジョイントが残っていれば削除
+            // なぜこの処理が必要なのか: 物理的な拘束があると直線移動の妨げになるため、Pullモード移行時に物理挙動を切る必要があるからです。
+            if (_joint != null)
             {
-                _cooldownTimer -= Time.deltaTime;
-                if (_cooldownTimer <= 0)
-                {
-                    IsCoolingDown = false;
-                }
+                Destroy(_joint);
+                _joint = null;
+            }
+
+            // ターゲットへの方向ベクトルを計算
+            Vector3 direction = (GrapplePoint - transform.position).normalized;
+
+            // 速度を上書きして強制移動
+            // なぜこの処理が必要なのか: 重力や慣性を無視して、ターゲットへ一直線に向かわせるためです。
+            _rb.linearVelocity = direction * PullSpeed;
+        }
+
+        /// <summary>
+        /// プレイヤーがグラップル地点に到達したか判定します。
+        /// なぜこの処理が必要なのか: Pull移動の終了条件（目的地への到達）を判定するためです。
+        /// </summary>
+        /// <returns>到達していればtrue</returns>
+        public bool IsAtGrapplePoint()
+        {
+            return Vector3.Distance(transform.position, GrapplePoint) <= StopPullDistance;
+        }
+
+        private Rigidbody _rb;
+        private SpringJoint _joint;
+
+        private void Awake()
+        {
+            // 必要なコンポーネントのキャッシュ
+            // なぜこの処理が必要なのか: 毎フレームのコンポーネント検索を避け、パフォーマンスを向上させるため
+            _rb = GetComponent<Rigidbody>();
+            
+            if (LineRenderer != null)
+            {
+                LineRenderer.useWorldSpace = true;
             }
         }
 
         private void LateUpdate()
         {
-            // ロープの開始位置を更新
-            // なぜこの処理が必要なのか: プレイヤーが動いてもロープの根元が銃口の位置に追従するようにするため
-            if (LineRenderer.enabled)
-            {
-                // GunTipが設定されていない場合はとりあえず現在位置を使うなどのフォールバックがあると良いが、
-                // ここでは設定されている前提で進める
-                Vector3 startPos = GunTip != null ? GunTip.position : transform.position;
-                LineRenderer.SetPosition(0, startPos);
-            }
+            // ロープの描画更新
+            // なぜこの処理が必要なのか: 物理演算によって移動したプレイヤーの最新の位置に合わせてロープを追従させるため
+            DrawRope();
         }
 
         /// <summary>
-        /// グラップル可能な地点を探し、見つかればその座標を返します。
+        /// ロープのビジュアルを更新します。
+        /// なぜこの処理が必要なのか: 接続点とプレイヤー（または銃口）の間に線を引くことで、グラップリングの状態を可視化するためです。
         /// </summary>
-        /// <param name="hitPoint">着弾点（出力）</param>
-        /// <returns>グラップル可能ならtrue</returns>
-        public bool TryGetGrapplePoint(out Vector3 hitPoint)
+        private void DrawRope()
         {
-            hitPoint = Vector3.zero;
+            if (!IsGrappling || LineRenderer == null) return;
 
-            // クールダウン中は使用不可
-            // なぜこの処理が必要なのか: ゲームバランスを保つため
-            if (IsCoolingDown) 
-            {
-                // Debug.Log("Grapple is cooling down.");
-                return false;
-            }
-
-            // カメラの中心（画面中央）からレイを飛ばす
-            // なぜこの処理が必要なのか: プレイヤーが見ている画面の正確な中心（レティクル位置）をターゲットにするため
-            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-            
-            // 自身のコライダーとの衝突を避けるため、レイキャストの設定には注意が必要
-            if (Physics.Raycast(ray, out hit, MaxGrappleDistance, WhatIsGrappleable))
-            {
-                hitPoint = hit.point;
-                Debug.Log($"Grapple Hit: {hit.collider.name} at distance {hit.distance}");
-                return true;
-            }
-
-            Debug.Log("Grapple Raycast Missed.");
-            return false;
-        }
-
-        /// <summary>
-        /// 目標地点へ到達するための初期速度ベクトルを計算します。
-        /// </summary>
-        /// <param name="startPoint">開始地点</param>
-        /// <param name="endPoint">目標地点</param>
-        /// <returns>計算された速度ベクトル</returns>
-        public Vector3 CalculateJumpVelocity(Vector3 startPoint, Vector3 endPoint)
-        {
-            float gravity = Physics.gravity.y;
-            
-            // 最低地点からの高さを考慮して放物線の頂点を決定
-            // なぜこの処理が必要なのか: 常に目標地点より少し上を通るような軌道を描き、障害物を越えやすくするため
-            float displacementY = endPoint.y - startPoint.y;
-            
-            // ターゲットが自分より高いか低いかで頂点の高さを調整するロジック
-            // 元のコードのロジックを踏襲
-            float trajectoryHeight = displacementY + OvershootYAxis;
-            if (displacementY < 0) trajectoryHeight = OvershootYAxis;
-
-            // 平面距離の計算
-            Vector3 displacementXZ = new Vector3(endPoint.x - startPoint.x, 0f, endPoint.z - startPoint.z);
-
-            // 物理方程式に基づいて必要な速度を逆算
-            // 公式: v_y = sqrt(-2 * g * h)
-            Vector3 velocityY = Vector3.up * Mathf.Sqrt(-2 * gravity * trajectoryHeight);
-            
-            // 公式: v_xz = dist_xz / (sqrt(-2h/g) + sqrt(2(d_y - h)/g))
-            // 上昇時間 + 下降時間 で水平距離を割ることで水平速度を求める
-            Vector3 velocityXZ = displacementXZ / (Mathf.Sqrt(-2 * trajectoryHeight / gravity)
-                + Mathf.Sqrt(2 * (displacementY - trajectoryHeight) / gravity));
-
-            // NaNチェック（ルートの中が負になる場合などの安全策）
-            if (float.IsNaN(velocityXZ.x) || float.IsNaN(velocityXZ.z) || float.IsNaN(velocityY.y))
-            {
-                Debug.LogWarning("Grapple calculation failed (NaN).");
-                return Vector3.zero;
-            }
-            
-            Vector3 resultVelocity = velocityXZ + velocityY;
-            Debug.Log($"Grapple Velocity Calculated: {resultVelocity}");
-
-            return resultVelocity;
-        }
-
-        /// <summary>
-        /// ロープの描画を開始します。
-        /// </summary>
-        /// <param name="targetPoint">ロープの先端位置</param>
-        public void StartGrappleVisual(Vector3 targetPoint)
-        {
-            // クールダウン開始
-            IsCoolingDown = true;
-            _cooldownTimer = GrapplingCooldown;
-
-            // ロープ描画有効化
-            // なぜこの処理が必要なのか: プレイヤーにグラップル中であることを視覚的に伝えるため
-            LineRenderer.enabled = true;
-            LineRenderer.SetPosition(1, targetPoint);
-        }
-
-        /// <summary>
-        /// ロープの描画を終了します。
-        /// </summary>
-        public void StopGrappleVisual()
-        {
-            // ロープ描画無効化
-            // なぜこの処理が必要なのか: グラップル動作が終了したため
-            LineRenderer.enabled = false;
+            // 始点は銃口、終点は接続点
+            // なぜこの処理が必要なのか: プレイヤーの手に持っている武器からロープが出ているように見せるため
+            Vector3 startPos = GunTip != null ? GunTip.position : transform.position;
+            LineRenderer.SetPosition(0, startPos);
+            LineRenderer.SetPosition(1, GrapplePoint);
         }
     }
 }
