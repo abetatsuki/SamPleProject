@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ActionSample.StateMachine
 {
@@ -78,9 +78,6 @@ namespace ActionSample.StateMachine
             _subStateMachine.CurrentState.PhysicsUpdate();
         }
 
-        // ========================================================================
-        // サブステートから呼び出される公開メソッド (State Transitions)
-        // ========================================================================
 
         /// <summary>
         /// Pullモード（直線移動）へ切り替えます。
