@@ -76,6 +76,11 @@ namespace ActionSample
         public RecoilController RecoilController { get; private set; }
 
         /// <summary>
+        /// グラップル制御コンポーネントへの参照
+        /// </summary>
+        public GrappleController GrappleController { get; private set; }
+
+        /// <summary>
         /// ステートマシンへの参照
         /// </summary>
         public StateMachine.StateMachine StateMachine { get; private set; }
@@ -100,6 +105,11 @@ namespace ActionSample
         /// </summary>
         public PlayerSlideState SlideState { get; private set; }
 
+        /// <summary>
+        /// グラップルステート
+        /// </summary>
+        public PlayerGrappleState GrappleState { get; private set; }
+
         [SerializeField]
         private Transform _mainCamera;
 
@@ -108,6 +118,14 @@ namespace ActionSample
             // 必要なコンポーネントの取得
             Rigidbody = GetComponent<Rigidbody>();
             InputHandler = GetComponent<PlayerInputHandler>();
+            
+            // GrappleControllerの取得。アタッチされていなければエラーログを出力するか、nullのままにしておく（RequireComponentはつけていないため）
+            // なぜこの処理が必要なのか: グラップル機能を利用するため
+            GrappleController = GetComponent<GrappleController>();
+            if (GrappleController == null)
+            {
+                Debug.LogWarning("GrappleController not found on Player object. Grappling will not work.");
+            }
             
             // カメラが未設定の場合はメインカメラを使用する
             // なぜこの処理が必要なのか: インスペクターでの設定漏れを防ぎ、自動的にメインカメラを対象にするため
@@ -130,6 +148,7 @@ namespace ActionSample
             IdleState = new PlayerIdleState(this);
             WalkState = new PlayerWalkState(this);
             SlideState = new PlayerSlideState(this);
+            GrappleState = new PlayerGrappleState(this);
         }
 
         private void Start()
@@ -158,6 +177,16 @@ namespace ActionSample
             // 現在のステートの物理更新を実行
             // なぜこの処理が必要なのか: 移動などの物理演算を伴う処理をFixedUpdateのタイミングで安定して行うため
             StateMachine.CurrentState.PhysicsUpdate();
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            // グラップル中に何かにぶつかったらステートを解除する
+            // なぜこの処理が必要なのか: 元のコードの挙動を再現し、壁にぶつかった際に即座に制御を戻すため
+            if (StateMachine.CurrentState == GrappleState)
+            {
+               // GrappleState.OnCollision();
+            }
         }
 
         private void OnValidate()
