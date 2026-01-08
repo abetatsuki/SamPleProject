@@ -39,14 +39,14 @@ namespace ActionSample.Weapon.StateMachine
             _reloadTimer -= Time.deltaTime;
 
             // リロード完了判定
-            // なぜこの処理が必要なのか: 設定されたリロード時間が経過したら弾薬補充処理を行うため
+            // 設定されたリロード時間が経過したら弾薬補充処理を行うため
             if (_reloadTimer <= 0f)
             {
                 // 補充に必要な弾数を計算（マガジン容量 - 現在の弾数）
                 int ammoNeeded = Context.MaxAmmo - Context.CurrentAmmo;
                 
                 // 実際に補充する弾数を決定
-                // なぜこの処理が必要なのか: 予備弾薬（TotalAmmo）が必要数より少ない場合に、持っている分だけを装填するため
+                // 予備弾薬（TotalAmmo）が必要数より少ない場合に、持っている分だけを装填するため
                 int ammoToLoad = Mathf.Min(ammoNeeded, Context.TotalAmmo);
 
                 // 弾薬の移動

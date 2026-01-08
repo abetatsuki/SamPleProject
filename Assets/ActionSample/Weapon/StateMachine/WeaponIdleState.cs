@@ -30,7 +30,7 @@ namespace ActionSample.Weapon.StateMachine
             base.LogicUpdate();
 
             // リロード入力の判定
-            // なぜこの処理が必要なのか: プレイヤーがRキーを押した時に手動リロードを実行するため
+            // プレイヤーがRキーを押した時に手動リロードを実行するため
             if (Context.InputHandler != null && Context.InputHandler.ReloadInput)
             {
                 // 弾が減っていて、かつ予備弾薬がある場合のみリロード可能
@@ -42,7 +42,7 @@ namespace ActionSample.Weapon.StateMachine
             }
 
             // 射撃入力の判定
-            // なぜこの処理が必要なのか: プレイヤーが攻撃ボタンを押した時に射撃を実行するため
+            // プレイヤーが攻撃ボタンを押した時に射撃を実行するため
             if (Context.InputHandler != null && Context.InputHandler.FireInput)
             {
                 // マガジンに弾がある場合は射撃へ

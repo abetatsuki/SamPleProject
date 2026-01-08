@@ -32,11 +32,11 @@ namespace ActionSample.Weapon.StateMachine
             base.LogicUpdate();
             
             // 連射間隔（レート）のチェック
-            // なぜこの処理が必要なのか: 一瞬で弾を撃ち尽くさないように、次の発射までの待機時間を設けるため
+            // 一瞬で弾を撃ち尽くさないように、次の発射までの待機時間を設けるため
             if (Time.time >= _nextFireTime)
             {
                 // 連射待機時間が過ぎたら、一度アイドル状態に戻る
-                // なぜこの処理が必要なのか: ここでIdleに戻ることで、Inputチェックを再度行い、押しっぱなしなら再度FireStateへ遷移するループを作るため
+                // ここでIdleに戻ることで、Inputチェックを再度行い、押しっぱなしなら再度FireStateへ遷移するループを作るため
                 // （セミオートの場合はここでトリガーリセット待ちなどのロジックを追加可能）
                 Context.StateMachine.ChangeState(Context.IdleState);
             }
@@ -53,11 +53,11 @@ namespace ActionSample.Weapon.StateMachine
             Context.CurrentAmmo--;
             
             // 次の発射可能時間を設定
-            // なぜこの処理が必要なのか: 連射速度（FireRate）に基づいてインターバルを計算するため
+            // 連射速度（FireRate）に基づいてインターバルを計算するため
             _nextFireTime = Time.time + Context.FireRate;
 
             // リコイル適用
-            // なぜこの処理が必要なのか: 射撃の反動をカメラや武器モデルに反映するため
+            // 射撃の反動をカメラや武器モデルに反映するため
             Context.ApplyRecoil();
 
             // 画面中心（照準）に向かってレイを飛ばす準備
@@ -66,7 +66,7 @@ namespace ActionSample.Weapon.StateMachine
             Vector3 targetPoint;
             
             // レイキャストを実行して着弾点を計算
-            // なぜこの処理が必要なのか: 実際に何かに当たった場所に向かって弾を飛ばすため（クロスヘアの指す場所へ飛ばす）
+            // 実際に何かに当たった場所に向かって弾を飛ばすため（クロスヘアの指す場所へ飛ばす）
             if (Physics.Raycast(ray, out RaycastHit hit, Context.Range))
             {
                 targetPoint = hit.point;
@@ -84,7 +84,7 @@ namespace ActionSample.Weapon.StateMachine
                 Bullet bulletScript = bulletObj.GetComponent<Bullet>();
                 
                 // Muzzleから着弾点への方向ベクトルを計算
-                // なぜこの処理が必要なのか: 銃口からターゲットへ向かって一直線に弾を飛ばすため
+                // 銃口からターゲットへ向かって一直線に弾を飛ばすため
                 Vector3 shootDir = (targetPoint - Context.Muzzle.position).normalized;
 
                 if (bulletScript != null)
