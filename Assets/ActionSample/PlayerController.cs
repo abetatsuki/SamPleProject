@@ -24,9 +24,9 @@ namespace ActionSample
         public float AimMoveSpeed = 2.5f;
 
         /// <summary>
-        /// スライディング時の速度
+        /// スライディング時の速度（Cキー: Slide）
         /// </summary>
-        [Header("Slide Settings")]
+        [Header("Slide Settings (C Key)")]
         public float SlideSpeed = 15f;
 
         /// <summary>
@@ -38,6 +38,32 @@ namespace ActionSample
         /// スライディング中の空気抵抗（減速）
         /// </summary>
         public float SlideDrag = 0.5f;
+
+        /// <summary>
+        /// スライディング時のY軸スケール（しゃがみ効果）
+        /// </summary>
+        public float SlideYScale = 0.5f;
+
+        /// <summary>
+        /// 滑走時の速度（Left Ctrl: Sliding）
+        /// </summary>
+        [Header("Sliding Settings (Left Ctrl)")]
+        public float SlidingSpeed = 15f;
+
+        /// <summary>
+        /// 平地での滑走継続時間（秒）
+        /// </summary>
+        public float SlidingDuration = 1.0f;
+
+        /// <summary>
+        /// 滑走中の空気抵抗
+        /// </summary>
+        public float SlidingDrag = 0.1f;
+
+        /// <summary>
+        /// 滑走時のY軸スケール
+        /// </summary>
+        public float SlidingYScale = 0.5f;
         
         /// <summary>
         /// マウス感度
