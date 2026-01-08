@@ -49,7 +49,7 @@ namespace ActionSample.StateMachine
             CurrentState = startingState;
             
             // ステート開始処理を実行
-            // なぜこの処理が必要なのか: 最初のステートのセットアップ（アニメーション再生やパラメータ初期化など）を行うため
+            // 最初のステートのセットアップ（アニメーション再生やパラメータ初期化など）を行うため
             startingState.Enter();
         }
 
@@ -60,14 +60,14 @@ namespace ActionSample.StateMachine
         public void ChangeState(IState newState)
         {
             // 現在のステートの終了処理を実行
-            // なぜこの処理が必要なのか: ステートを抜ける際のクリーンアップ（イベント解除やフラグのリセットなど）を行うため
+            // ステートを抜ける際のクリーンアップ（イベント解除やフラグのリセットなど）を行うため
             CurrentState.Exit();
 
             // ステートを更新
             CurrentState = newState;
 
             // 新しいステートの開始処理を実行
-            // なぜこの処理が必要なのか: 次のステートとして動作を開始するための準備を行うため
+            // 次のステートとして動作を開始するための準備を行うため
             CurrentState.Enter();
         }
     }

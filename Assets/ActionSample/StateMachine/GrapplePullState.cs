@@ -33,7 +33,7 @@ namespace ActionSample.StateMachine
             base.LogicUpdate();
 
             // 到達判定
-            // なぜこの処理が必要なのか: 目標地点に着いたらアクションを終了させるため
+            // 目標地点に着いたらアクションを終了させるため
             if (Context.GrappleController.IsAtGrapplePoint())
             {
                 Debug.Log("Grapple: Reached Target (Pull Finished)");
@@ -50,7 +50,7 @@ namespace ActionSample.StateMachine
             base.PhysicsUpdate();
             
             // 移動処理の継続
-            // なぜこの処理が必要なのか: Rigidbodyの速度を毎フレーム更新し続け、外部要因（重力など）による減速を防いでターゲットへ確実に届けるため
+            // Rigidbodyの速度を毎フレーム更新し続け、外部要因（重力など）による減速を防いでターゲットへ確実に届けるため
             Context.GrappleController.ExecutePull();
         }
     }

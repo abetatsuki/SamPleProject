@@ -20,7 +20,7 @@ namespace ActionSample.StateMachine
         public override void Enter()
         {
             // 水平方向の速度をゼロにする（重力の影響を受けるY軸速度は維持）
-            // なぜこの処理が必要なのか: 前のステート（歩行など）の慣性を断ち切り、即座に停止させるため
+            // 前のステート（歩行など）の慣性を断ち切り、即座に停止させるため
             Vector3 currentVel = Context.Rigidbody.linearVelocity;
             Context.Rigidbody.linearVelocity = new Vector3(0, currentVel.y, 0);
         }
@@ -33,35 +33,35 @@ namespace ActionSample.StateMachine
             base.LogicUpdate();
 
             // 移動入力のチェック
-            // なぜこの処理が必要なのか: 入力されたら即座に歩行ステートへ遷移させるため
+            // 入力されたら即座に歩行ステートへ遷移させるため
             if (Context.InputHandler.MovementInput.sqrMagnitude > 0.01f)
             {
                 Context.StateMachine.ChangeState(Context.WalkState);
             }
             
             // スライディング入力（Cキー）のチェック
-            // なぜこの処理が必要なのか: 停止状態から単発のスライディングを開始できるようにするため
+            // 停止状態から単発のスライディングを開始できるようにするため
             if(Context.InputHandler.SlideTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
             }
             
             // 滑走入力（左Ctrlキー）のチェック
-            // なぜこの処理が必要なのか: 停止状態から継続的なスライディング（滑走）を開始できるようにするため
+            // 停止状態から継続的なスライディング（滑走）を開始できるようにするため
             if(Context.InputHandler.SlidingTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlidingState);
             }
 
             // ジャンプ入力のチェック
-            // なぜこの処理が必要なのか: 待機状態からジャンプするため
+            // 待機状態からジャンプするため
             if (Context.InputHandler.JumpTriggered)
             {
                 Context.StateMachine.ChangeState(Context.JumpState);
             }
 
             // グラップル入力のチェック
-            // なぜこの処理が必要なのか: 待機状態から即座にグラップルアクションへ移行するため
+            // 待機状態から即座にグラップルアクションへ移行するため
             if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
             {
                 Context.StateMachine.ChangeState(Context.GrappleState);

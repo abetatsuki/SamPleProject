@@ -37,7 +37,7 @@ namespace ActionSample.StateMachine
             base.Enter();
             
             // 常にSwingステートから開始する
-            // なぜこの処理が必要なのか: グラップルは常に「発射→接続（スイング）」から始まり、その後の入力時間でプルに派生するため
+            // グラップルは常に「発射→接続（スイング）」から始まり、その後の入力時間でプルに派生するため
             _subStateMachine.Initialize(_swingState);
         }
 

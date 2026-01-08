@@ -22,14 +22,14 @@ namespace ActionSample.StateMachine
             base.Enter();
             
             // エージェントの移動を再開
-            // なぜこの処理が必要なのか: 他のステート（気絶など）で停止させられている可能性があるため
+            // 他のステート（気絶など）で停止させられている可能性があるため
             Context.NavAgent.isStopped = false;
             
             // ウェイポイントの有無を確認
             if (Context.Waypoints == null || Context.Waypoints.Length == 0)
             {
                 // ウェイポイントがない場合は待機ステートへ戻る
-                // なぜこの処理が必要なのか: 移動先が存在しないのに巡回しようとしてエラーになるのを防ぐため
+                // 移動先が存在しないのに巡回しようとしてエラーになるのを防ぐため
                 Context.StateMachine.ChangeState(Context.IdleState);
             }
             else
@@ -47,7 +47,7 @@ namespace ActionSample.StateMachine
             base.Exit();
             
             // 巡回中断時に移動を停止
-            // なぜこの処理が必要なのか: ステートが変わったのに移動し続けるのを防ぐため（例：気絶時）
+            // ステートが変わったのに移動し続けるのを防ぐため（例：気絶時）
             if (Context.NavAgent.enabled)
             {
                 Context.NavAgent.isStopped = true;
@@ -68,7 +68,7 @@ namespace ActionSample.StateMachine
                 if (_waitTimer <= 0f)
                 {
                     // 待機終了、次の目的地へ
-                    // なぜこの処理が必要なのか: 一定時間の待機が終わったら、巡回を再開するため
+                    // 一定時間の待機が終わったら、巡回を再開するため
                     _isWaiting = false;
                     NextWaypoint();
                 }
@@ -84,7 +84,7 @@ namespace ActionSample.StateMachine
                 if (!Context.NavAgent.hasPath || Context.NavAgent.velocity.sqrMagnitude == 0f)
                 {
                     // 到着したら待機を開始
-                    // なぜこの処理が必要なのか: ただ通り過ぎるのではなく、各ポイントで周囲を見渡すような挙動を作るため
+                    // ただ通り過ぎるのではなく、各ポイントで周囲を見渡すような挙動を作るため
                     StartWait(1.0f); // 1秒間待機
                 }
             }
@@ -119,7 +119,7 @@ namespace ActionSample.StateMachine
         private void NextWaypoint()
         {
             // インデックスを更新（配列の最後まで行ったら0に戻るループ）
-            // なぜこの処理が必要なのか: 巡回ルートを周回させ続けるため
+            // 巡回ルートを周回させ続けるため
             _currentWaypointIndex = (_currentWaypointIndex + 1) % Context.Waypoints.Length;
             SetDestinationToCurrentWaypoint();
         }

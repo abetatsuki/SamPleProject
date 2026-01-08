@@ -22,31 +22,31 @@ namespace ActionSample.StateMachine
             base.LogicUpdate();
 
             // 入力判定：移動入力がなくなったらIdleへ
-            // なぜこの処理が必要なのか: プレイヤーがキーを離した瞬間に移動を止め、待機状態に戻すため
+            // プレイヤーがキーを離した瞬間に移動を止め、待機状態に戻すため
             if (Context.InputHandler.MovementInput.sqrMagnitude < 0.01f)
             {
                 Context.StateMachine.ChangeState(Context.IdleState);
             }
             // 入力判定：スライディング入力（Cキー）があればSlideへ
-            // なぜこの処理が必要なのか: 単発のスライディング（回避や短いダッシュ）を実行するため
+            // 単発のスライディング（回避や短いダッシュ）を実行するため
             else if (Context.InputHandler.SlideTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
             }
             // 入力判定：滑走入力（左Ctrlキー）があればSlidingへ
-            // なぜこの処理が必要なのか: 斜面での滑走や継続的なスライディングを実行するため
+            // 斜面での滑走や継続的なスライディングを実行するため
             else if (Context.InputHandler.SlidingTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlidingState);
             }
             // 入力判定：ジャンプ入力があればJumpへ
-            // なぜこの処理が必要なのか: 移動中に障害物を飛び越えたり段差を登るため
+            // 移動中に障害物を飛び越えたり段差を登るため
             else if (Context.InputHandler.JumpTriggered)
             {
                 Context.StateMachine.ChangeState(Context.JumpState);
             }
             // 入力判定：グラップル入力があればGrappleへ
-            // なぜこの処理が必要なのか: 移動中から即座にグラップルアクションへ移行するため
+            // 移動中から即座にグラップルアクションへ移行するため
             else if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
             {
                 Context.StateMachine.ChangeState(Context.GrappleState);
@@ -61,19 +61,19 @@ namespace ActionSample.StateMachine
             base.PhysicsUpdate();
             
             // ローカル入力ベクトルをワールド座標系に変換
-            // なぜこの処理が必要なのか: プレイヤーの現在の向き（またはカメラの向き）に基づいた方向に移動させるため
+            // プレイヤーの現在の向き（またはカメラの向き）に基づいた方向に移動させるため
             // Context.transform.TransformDirection はローカル(X, Z)をワールド方向へ変換する
             Vector3 worldInput = Context.transform.TransformDirection(Context.InputHandler.MovementInput);
             
             // 現在の移動速度を決定
-            // なぜこの処理が必要なのか: エイム中（構え中）は精密な操作が必要なため、通常より遅い移動速度を適用するため
+            // エイム中（構え中）は精密な操作が必要なため、通常より遅い移動速度を適用するため
             float currentSpeed = Context.InputHandler.AimInput ? Context.AimMoveSpeed : Context.MoveSpeed;
             
             // ターゲット速度の計算
             Vector3 targetVelocity = worldInput * currentSpeed;
             
             // Y軸（重力）の維持
-            // なぜこの処理が必要なのか: 移動計算でY軸を上書きしてしまうと、落下やジャンプができなくなるため
+            // 移動計算でY軸を上書きしてしまうと、落下やジャンプができなくなるため
             // 既存のY軸速度（重力加速度の結果）をそのまま適用する
             targetVelocity.y = Context.Rigidbody.linearVelocity.y; 
             

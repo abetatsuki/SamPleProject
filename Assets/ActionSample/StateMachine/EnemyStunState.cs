@@ -25,7 +25,7 @@ namespace ActionSample.StateMachine
             _timer = Context.StunDuration;
             
             // エージェントの移動を完全に停止
-            // なぜこの処理が必要なのか: 気絶中は一切動けないようにするため。速度もゼロにする。
+            // 気絶中は一切動けないようにするため。速度もゼロにする。
             if (Context.NavAgent != null && Context.NavAgent.isActiveAndEnabled)
             {
                 Context.NavAgent.isStopped = true;
@@ -33,7 +33,7 @@ namespace ActionSample.StateMachine
             }
 
             // 見た目の変化（青色にする）
-            // なぜこの処理が必要なのか: プレイヤーに気絶中であることを視覚的に伝えるため
+            // プレイヤーに気絶中であることを視覚的に伝えるため
             if (Context.MeshRenderer != null)
             {
                 Context.MeshRenderer.material.color = Color.blue;
@@ -51,7 +51,7 @@ namespace ActionSample.StateMachine
             base.Exit();
             
             // 色を元に戻す
-            // なぜこの処理が必要なのか: 気絶状態が終わったことを視覚的に反映するため
+            // 気絶状態が終わったことを視覚的に反映するため
             if (Context.MeshRenderer != null)
             {
                 Context.MeshRenderer.material.color = Context.OriginalColor;
@@ -72,7 +72,7 @@ namespace ActionSample.StateMachine
             _timer -= Time.deltaTime;
 
             // 気絶時間の終了判定
-            // なぜこの処理が必要なのか: 一定時間経過後に敵を行動可能な状態（巡回または待機）に復帰させるため
+            // 一定時間経過後に敵を行動可能な状態（巡回または待機）に復帰させるため
             if (_timer <= 0f)
             {
                 if (Context.Waypoints != null && Context.Waypoints.Length > 0)

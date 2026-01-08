@@ -45,7 +45,7 @@ namespace ActionSample.StateMachine
                 float duration = Time.time - _startTime;
 
                 // 短押し（タップ）ならPullモードへ遷移
-                // なぜこの処理が必要なのか: プレイヤーがスイングではなく高速移動を意図した操作に対応するため
+                // プレイヤーがスイングではなく高速移動を意図した操作に対応するため
                 if (duration < TapThreshold)
                 {
                     Debug.Log("Grapple: Switch to Pull SubState");

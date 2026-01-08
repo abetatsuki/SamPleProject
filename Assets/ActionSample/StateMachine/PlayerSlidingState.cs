@@ -32,7 +32,7 @@ namespace ActionSample.StateMachine
             Context.transform.localScale = new Vector3(_originalScale.x, Context.SlidingYScale, _originalScale.z);
 
             // 接地性を高めるための下方向への力
-            // なぜこの処理が必要なのか: スライディング開始時に体が浮くのを防ぎ、地面に吸い付くようにするため
+            // スライディング開始時に体が浮くのを防ぎ、地面に吸い付くようにするため
             Context.Rigidbody.AddForce(Vector3.down * Context.GravityScale, ForceMode.Impulse);
             
             // 空気抵抗（ドラッグ）の設定
@@ -52,7 +52,7 @@ namespace ActionSample.StateMachine
             // 参照元のStopSlide()に相当
             
             // スケール復元時の地面めり込み回避（Super Jump防止）
-            // なぜこの処理が必要なのか: スケールを戻すとコライダーが地面に食い込み、物理演算で大きく弾き飛ばされてしまうのを防ぐため
+            // スケールを戻すとコライダーが地面に食い込み、物理演算で大きく弾き飛ばされてしまうのを防ぐため
             float scaleDifference = _originalScale.y - Context.transform.localScale.y;
             if (scaleDifference > 0)
             {
@@ -83,7 +83,7 @@ namespace ActionSample.StateMachine
             }
             
             // キーを離したらスライディング終了
-            // なぜこの処理が必要なのか: プレイヤーの意思でスライディングを中断できるようにするため
+            // プレイヤーの意思でスライディングを中断できるようにするため
             if (!Context.InputHandler.SlidingInputHeld)
             {
                 TransitionToNextState();
@@ -136,7 +136,7 @@ namespace ActionSample.StateMachine
                     else
                     {
                         // 空中の場合
-                        // なぜこの処理が必要なのか: 空中で加速し続ける（飛ぶ）バグを防ぐため、力は加えない。
+                        // 空中で加速し続ける（飛ぶ）バグを防ぐため、力は加えない。
                         // ただしスライディング状態としてのタイマーは消費させる。
                          _slideTimer -= Time.fixedDeltaTime;
                     }

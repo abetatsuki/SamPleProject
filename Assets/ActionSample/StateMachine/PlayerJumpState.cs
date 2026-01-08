@@ -22,7 +22,7 @@ namespace ActionSample.StateMachine
             base.Enter();
 
             // ジャンプ処理
-            // なぜこの処理が必要なのか: 接地状態から空中に飛び上がるため
+            // 接地状態から空中に飛び上がるため
             Jump();
         }
 
@@ -34,7 +34,7 @@ namespace ActionSample.StateMachine
             base.LogicUpdate();
 
             // ジャンプ直後は空中状態へ遷移
-            // なぜこの処理が必要なのか: ジャンプの瞬間的な力積を加えた後は、落下や空中制御を行うAirStateで管理するため
+            // ジャンプの瞬間的な力積を加えた後は、落下や空中制御を行うAirStateで管理するため
             Context.StateMachine.ChangeState(Context.AirState);
         }
 
@@ -44,7 +44,7 @@ namespace ActionSample.StateMachine
         private void Jump()
         {
             // Y軸速度のリセット
-            // なぜこの処理が必要なのか: 落下中などにジャンプした場合でも、常に一定の高さまで跳べるようにするため
+            // 落下中などにジャンプした場合でも、常に一定の高さまで跳べるようにするため
             Context.Rigidbody.linearVelocity = new Vector3(Context.Rigidbody.linearVelocity.x, 0f, Context.Rigidbody.linearVelocity.z);
 
             // 上方向への力（インパルス）を加える

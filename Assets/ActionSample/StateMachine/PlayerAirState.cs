@@ -48,7 +48,7 @@ namespace ActionSample.StateMachine
             AirControl();
 
             // 着地判定
-            // なぜこの処理が必要なのか: 地面に接触したら通常の移動・待機ステートに戻すため
+            // 地面に接触したら通常の移動・待機ステートに戻すため
             // ジャンプ直後の誤検知を防ぐため、上昇中（Y速度が正）は着地判定を行わない、または厳密にする
             if (Context.Rigidbody.linearVelocity.y <= 0.1f && Context.IsGrounded())
             {
@@ -72,7 +72,7 @@ namespace ActionSample.StateMachine
             Vector3 worldInput = Context.transform.TransformDirection(Context.InputHandler.MovementInput);
 
             // 移動力を加える（空中制御）
-            // なぜこの処理が必要なのか: 空中でも多少の軌道修正を可能にするため（AirMultiplierで制限）
+            // 空中でも多少の軌道修正を可能にするため（AirMultiplierで制限）
             if (worldInput.magnitude > 0.1f)
             {
                 Context.Rigidbody.AddForce(worldInput.normalized * Context.MoveSpeed * Context.AirMultiplier, ForceMode.Force);
