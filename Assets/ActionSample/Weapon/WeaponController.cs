@@ -159,13 +159,13 @@ namespace ActionSample
             if (PlayerController != null && PlayerController.RecoilController != null)
             {
                 // 横方向はランダムに振ってブレを表現する
-                // なぜこの処理が必要なのか: 毎回同じ方向だと不自然なため
+                // 毎回同じ方向だと不自然なため
                 float horizontalRecoil = Random.Range(-RecoilHorizontal, RecoilHorizontal);
                 PlayerController.RecoilController.AddRecoil(RecoilVertical, horizontalRecoil);
             }
 
             // 武器モデルへの見た目上のリコイル適用
-            // なぜこの処理が必要なのか: 銃自体が手元で跳ねる動きを表現し、迫力を出すため
+            // 銃自体が手元で跳ねる動きを表現し、迫力を出すため
             _visualRecoil.PlayRecoil(VisualRecoilForce);
         }
 
@@ -186,14 +186,14 @@ namespace ActionSample
             }
 
             // ステートマシンの初期化
-            // なぜこの処理が必要なのか: 射撃、リロード、待機などの状態遷移を管理するため
+            // 射撃、リロード、待機などの状態遷移を管理するため
             StateMachine = new StateMachine.StateMachine();
             IdleState = new WeaponIdleState(this);
             FireState = new WeaponFireState(this);
             ReloadState = new WeaponReloadState(this);
 
             // 見た目上のリコイル計算クラスの初期化
-            // なぜこの処理が必要なのか: リコイルの物理計算（カメラ）とは別に、銃モデルのアニメーション的な挙動（見た目）を計算するため
+            // リコイルの物理計算（カメラ）とは別に、銃モデルのアニメーション的な挙動（見た目）を計算するため
             _visualRecoil = new GunVisualRecoilProcessor(VisualReturnSpeed, VisualSnappiness, VisualMaxRecoil);
 
             // ADS設定の初期化
@@ -235,14 +235,14 @@ namespace ActionSample
             Vector3 targetPos = isAiming ? AdsPosition : HipPosition;
 
             // カメラのFOVを滑らかに変更
-            // なぜこの処理が必要なのか: 覗き込んだ際にズームする演出を行うため
+            // 覗き込んだ際にズームする演出を行うため
             if (MainCamera != null)
             {
                 MainCamera.fieldOfView = Mathf.Lerp(MainCamera.fieldOfView, targetFov, Time.deltaTime * AdsSpeed);
             }
 
             // 武器の位置を滑らかに変更し、リコイルオフセットを加算
-            // なぜこの処理が必要なのか: 画面中央に銃を構える動きと、発砲時の跳ね上がり（VisualRecoil）を合成して反映するため
+            // 画面中央に銃を構える動きと、発砲時の跳ね上がり（VisualRecoil）を合成して反映するため
             // Lerpでスムーズに移動させつつ、CurrentOffset（リコイルによる瞬間的なズレ）を足し合わせている
             transform.localPosition = Vector3.Lerp(transform.localPosition, targetPos, Time.deltaTime * AdsSpeed) + _visualRecoil.CurrentOffset;
         }
