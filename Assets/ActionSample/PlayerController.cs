@@ -68,6 +68,17 @@ namespace ActionSample
         public float GravityScale = 10f;
 
         /// <summary>
+        /// ジャンプ力
+        /// </summary>
+        [Header("Jump Settings")]
+        public float JumpForce = 7f;
+
+        /// <summary>
+        /// 空中移動の倍率（0.0〜1.0）
+        /// </summary>
+        public float AirMultiplier = 0.4f;
+        
+        /// <summary>
         /// マウス感度
         /// </summary>
         [Header("Aiming Settings")]
@@ -144,6 +155,16 @@ namespace ActionSample
         public PlayerSlidingState SlidingState { get; private set; }
 
         /// <summary>
+        /// ジャンプステート
+        /// </summary>
+        public PlayerJumpState JumpState { get; private set; }
+
+        /// <summary>
+        /// 空中（落下・滞空）ステート
+        /// </summary>
+        public PlayerAirState AirState { get; private set; }
+
+        /// <summary>
         /// グラップルステート
         /// </summary>
         public PlayerGrappleState GrappleState { get; private set; }
@@ -168,6 +189,8 @@ namespace ActionSample
             WalkState = new PlayerWalkState(this);
             SlideState = new PlayerSlideState(this);
             SlidingState = new PlayerSlidingState(this);
+            JumpState = new PlayerJumpState(this);
+            AirState = new PlayerAirState(this);
             GrappleState = new PlayerGrappleState(this);
 
             StateMachine.Initialize(IdleState);
@@ -186,6 +209,15 @@ namespace ActionSample
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 接地しているかどうかを判定します。
+        /// </summary>
+        /// <returns>接地していればtrue</returns>
+        public bool IsGrounded()
+        {
+            return Physics.Raycast(transform.position, Vector3.down, PlayerHeight * 0.5f + 0.2f);
         }
 
         /// <summary>
