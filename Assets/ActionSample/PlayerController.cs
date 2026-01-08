@@ -247,29 +247,29 @@ namespace ActionSample
         private void Update()
         {
             // リコイルの時間経過による減衰処理
-            // なぜこの処理が必要なのか: 射撃による反動を時間経過とともに元の位置に戻すため
+            // 射撃による反動を時間経過とともに元の位置に戻すため
             RecoilController.Update(Time.deltaTime);
             
             // 現在のステートのロジック更新を実行
-            // なぜこの処理が必要なのか: ステートごとの固有の振る舞い（入力処理や状態遷移判定など）を実行するため
+            // ステートごとの固有の振る舞い（入力処理や状態遷移判定など）を実行するため
             StateMachine.CurrentState.LogicUpdate();
 
             // 視点の更新処理
-            // なぜこの処理が必要なのか: ステートに関わらず視点操作は常に行えるようにするため
+            // ステートに関わらず視点操作は常に行えるようにするため
             Aiming.UpdateLook(InputHandler.LookInput);
         }
 
         private void FixedUpdate()
         {
             // 現在のステートの物理更新を実行
-            // なぜこの処理が必要なのか: 移動などの物理演算を伴う処理をFixedUpdateのタイミングで安定して行うため
+            // 移動などの物理演算を伴う処理をFixedUpdateのタイミングで安定して行うため
             StateMachine.CurrentState.PhysicsUpdate();
         }
 
         private void OnCollisionEnter(Collision collision)
         {
             // グラップル中に何かにぶつかったらステートを解除する
-            // なぜこの処理が必要なのか: 元のコードの挙動を再現し、壁にぶつかった際に即座に制御を戻すため
+            // 元のコードの挙動を再現し、壁にぶつかった際に即座に制御を戻すため
             if (StateMachine.CurrentState == GrappleState)
             {
                // GrappleState.OnCollision();
@@ -285,7 +285,7 @@ namespace ActionSample
         private void OnValidate()
         {
              // インスペクターでの値変更をランタイム反映させるための簡易対応
-             // なぜこの処理が必要なのか: プレイモード中にパラメータを調整した際、即座に反映させて調整効率を上げるため
+             // プレイモード中にパラメータを調整した際、即座に反映させて調整効率を上げるため
              if (RecoilController != null)
              {
                  RecoilController.RecoilRecoverySpeed = RecoilRecoverySpeed;

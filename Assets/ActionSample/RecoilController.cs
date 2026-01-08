@@ -37,7 +37,7 @@ namespace ActionSample
         public void Update(float deltaTime)
         {
             // リコイルの減衰処理を実行
-            // なぜこの処理が必要なのか: 射撃後に照準を自動的に元の位置に戻すため
+            // 射撃後に照準を自動的に元の位置に戻すため
             RecoverRecoil(deltaTime);
         }
 
@@ -49,11 +49,11 @@ namespace ActionSample
         public void AddRecoil(float vertical, float horizontal)
         {
             // 縦方向のリコイルを加算
-            // なぜこの処理が必要なのか: 銃の発射反動による跳ね上がりを表現するため
+            // 銃の発射反動による跳ね上がりを表現するため
             CurrentRecoilPitch += vertical;
             
             // 横方向のリコイルを加算
-            // なぜこの処理が必要なのか: 銃の左右へのブレを表現するため
+            // 銃の左右へのブレを表現するため
             CurrentRecoilYaw += horizontal;
         }
 
@@ -66,7 +66,7 @@ namespace ActionSample
             if (CurrentRecoilPitch > 0)
             {
                 // 縦方向の減衰（線形補間ではなく減算）
-                // なぜこの処理が必要なのか: 一定速度でスムーズに照準を戻すため
+                // 一定速度でスムーズに照準を戻すため
                 CurrentRecoilPitch -= deltaTime * RecoilRecoverySpeed;
                 
                 // 負の値にならないようにクランプ
@@ -76,7 +76,7 @@ namespace ActionSample
             if (Mathf.Abs(CurrentRecoilYaw) > 0)
             {
                 // 横方向の減衰（Lerpによる補間）
-                // なぜこの処理が必要なのか: 横ブレは中心（0）に向かって収束するように滑らかに戻すため
+                // 横ブレは中心（0）に向かって収束するように滑らかに戻すため
                 CurrentRecoilYaw = Mathf.Lerp(CurrentRecoilYaw, 0, deltaTime * RecoilRecoverySpeed);
             }
         }

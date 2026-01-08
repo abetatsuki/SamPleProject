@@ -40,7 +40,7 @@ namespace ActionSample
         public void UpdateLook(Vector2 lookInput)
         {
             // 必要な参照がなければ処理を中断
-            // なぜこの処理が必要なのか: ゲーム終了時やオブジェクト破棄後にアクセスしてエラーになるのを防ぐため
+            // ゲーム終了時やオブジェクト破棄後にアクセスしてエラーになるのを防ぐため
             if (_mainCamera == null || _playerBody == null) return;
 
             // 水平回転 (Player Body)
@@ -50,16 +50,16 @@ namespace ActionSample
             _playerBody.Rotate(0, yaw, 0);
 
             // 垂直回転 (Camera)
-            // なぜこの処理が必要なのか: 首の上下運動を表現するため。体全体は回さず、カメラだけを回転させる
+            // 首の上下運動を表現するため。体全体は回さず、カメラだけを回転させる
             float pitchDelta = -lookInput.y * MouseSensitivity;
             _currentPitch += pitchDelta;
             
             // 角度制限
-            // なぜこの処理が必要なのか: 首が一周したり、不自然な角度まで曲がらないようにするため
+            // 首が一周したり、不自然な角度まで曲がらないようにするため
             _currentPitch = Mathf.Clamp(_currentPitch, -MaxLookAngle, MaxLookAngle);
 
             // リコイル適用後の最終的なPitch
-            // なぜこの処理が必要なのか: 銃のリコイル（跳ね上がり）は画面を上に向かせるが、
+            // 銃のリコイル（跳ね上がり）は画面を上に向かせるが、
             // プレイヤーの意図した視点操作（_currentPitch）とは別で一時的なオフセットとして扱いたい場合があるため
             // ここでは現在の視点角度からリコイル分を引く（UnityのX軸回転はマイナスが上向き）
             float finalPitch = _currentPitch - _recoilController.CurrentRecoilPitch;
@@ -75,7 +75,7 @@ namespace ActionSample
         public void AddRecoil(float vertical, float horizontal)
         {
             // RecoilControllerへ処理を委譲
-            // なぜこの処理が必要なのか: リコイルの計算ロジックを一箇所（RecoilController）に集約するため
+            // リコイルの計算ロジックを一箇所（RecoilController）に集約するため
             _recoilController?.AddRecoil(vertical, horizontal);
         }
 
@@ -91,7 +91,7 @@ namespace ActionSample
         private void Initialize()
         {
             // FPS視点ではカーソルをロックするのが一般的
-            // なぜこの処理が必要なのか: マウスカーソルが画面外に出たり、クリックで他のウィンドウにフォーカスが移るのを防ぐため
+            // マウスカーソルが画面外に出たり、クリックで他のウィンドウにフォーカスが移るのを防ぐため
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
