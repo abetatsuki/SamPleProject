@@ -64,7 +64,9 @@ namespace ActionSample
         /// 滑走時のY軸スケール
         /// </summary>
         public float SlidingYScale = 0.5f;
-        
+
+        public float GravityScale = 10f;
+
         /// <summary>
         /// マウス感度
         /// </summary>
