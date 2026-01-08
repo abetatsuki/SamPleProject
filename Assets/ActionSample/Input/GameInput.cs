@@ -66,6 +66,11 @@ namespace ActionSample.Input
             // 継続的なスライディング（滑走）操作を定義するため
             var slidingAction = _playerMap.AddAction("Sliding", InputActionType.Button, "<Keyboard>/leftCtrl");
             Sliding = new InputActionEntity<float>(slidingAction);
+
+            // Jumpアクションの定義 (Space Key)
+            // ジャンプ操作（スペースキー）を定義するため
+            var jumpAction = _playerMap.AddAction("Jump", InputActionType.Button, "<Keyboard>/space");
+            Jump = new InputActionEntity<float>(jumpAction);
         }
 
         /// <summary>移動入力 (WASD)。</summary>
@@ -92,6 +97,9 @@ namespace ActionSample.Input
         /// <summary>滑走入力 (Left Ctrl)。</summary>
         public InputActionEntity<float> Sliding { get; private set; }
 
+        /// <summary>ジャンプ入力 (Space Key)。</summary>
+        public InputActionEntity<float> Jump { get; private set; }
+
 
         /// <summary>
         /// 全ての入力を有効化します。
@@ -109,6 +117,7 @@ namespace ActionSample.Input
             Grapple.Enable();
             Slide.Enable();
             Sliding.Enable();
+            Jump.Enable();
         }
 
         /// <summary>
@@ -127,6 +136,7 @@ namespace ActionSample.Input
             Grapple.Disable();
             Slide.Disable();
             Sliding.Disable();
+            Jump.Disable();
         }
 
 
@@ -144,6 +154,7 @@ namespace ActionSample.Input
             Grapple.Dispose();
             Slide.Dispose();
             Sliding.Dispose();
+            Jump.Dispose();
 
             if (_inputActionAsset != null)
             {
