@@ -53,6 +53,13 @@ namespace ActionSample.StateMachine
                 Context.StateMachine.ChangeState(Context.SlidingState);
             }
 
+            // ジャンプ入力のチェック
+            // なぜこの処理が必要なのか: 待機状態からジャンプするため
+            if (Context.InputHandler.JumpTriggered)
+            {
+                Context.StateMachine.ChangeState(Context.JumpState);
+            }
+
             // グラップル入力のチェック
             // なぜこの処理が必要なのか: 待機状態から即座にグラップルアクションへ移行するため
             if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
