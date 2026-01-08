@@ -27,7 +27,7 @@ namespace ActionSample
         public bool AimInput { get; private set; }
 
         /// <summary>
-        /// スライディング入力がトリガーされた瞬間の状態。
+        /// スライディング入力（Cキー）がトリガーされた瞬間の状態。
         /// </summary>
         public bool SlideTriggered { get; private set; }
 
@@ -57,11 +57,22 @@ namespace ActionSample
         /// </summary>
         public bool GrappleInput { get; private set; }
 
+        /// <summary>
+        /// 滑走入力（左Ctrlキー）がトリガーされた瞬間の状態。
+        /// </summary>
+        public bool SlidingTriggered { get; private set; }
+
+        /// <summary>
+        /// 滑走入力（左Ctrlキー）が押されている間の状態。
+        /// </summary>
+        public bool SlidingInputHeld { get; private set; }
+
 
         private GameInput _gameInput;
 
         // トリガー入力の一時保存用フラグ
         private bool _slideTriggeredBuffer;
+        private bool _slidingTriggeredBuffer;
         private bool _reloadInputBuffer;
         private bool _grappleInputBuffer;
 
@@ -96,8 +107,13 @@ namespace ActionSample
             _gameInput.Grapple.Started += _ => GrappleInputHeld = true;
             _gameInput.Grapple.Canceled += _ => GrappleInputHeld = false;
 
-            // スライディング (トリガー)
+            // スライディング (Cキー: トリガー)
             _gameInput.Slide.Performed += _ => _slideTriggeredBuffer = true;
+
+            // 滑走 (左Ctrlキー: トリガー & 長押し)
+            _gameInput.Sliding.Performed += _ => _slidingTriggeredBuffer = true;
+            _gameInput.Sliding.Started += _ => SlidingInputHeld = true;
+            _gameInput.Sliding.Canceled += _ => SlidingInputHeld = false;
 
             // リロード (トリガー)
             _gameInput.Reload.Performed += _ => _reloadInputBuffer = true;
@@ -131,6 +147,9 @@ namespace ActionSample
 
             SlideTriggered = _slideTriggeredBuffer;
             _slideTriggeredBuffer = false;
+
+            SlidingTriggered = _slidingTriggeredBuffer;
+            _slidingTriggeredBuffer = false;
 
             ReloadInput = _reloadInputBuffer;
             _reloadInputBuffer = false;
