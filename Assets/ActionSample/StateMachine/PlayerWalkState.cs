@@ -27,11 +27,17 @@ namespace ActionSample.StateMachine
             {
                 Context.StateMachine.ChangeState(Context.IdleState);
             }
-            // 入力判定：スライディング入力があればSlideへ
-            // なぜこの処理が必要なのか: 移動中からのスライディングアクションへの割り込みを許可するため
+            // 入力判定：スライディング入力（Cキー）があればSlideへ
+            // なぜこの処理が必要なのか: 単発のスライディング（回避や短いダッシュ）を実行するため
             else if (Context.InputHandler.SlideTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
+            }
+            // 入力判定：滑走入力（左Ctrlキー）があればSlidingへ
+            // なぜこの処理が必要なのか: 斜面での滑走や継続的なスライディングを実行するため
+            else if (Context.InputHandler.SlidingTriggered)
+            {
+                Context.StateMachine.ChangeState(Context.SlidingState);
             }
             // 入力判定：グラップル入力があればGrappleへ
             // なぜこの処理が必要なのか: 移動中から即座にグラップルアクションへ移行するため
