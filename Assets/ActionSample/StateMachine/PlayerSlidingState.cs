@@ -33,7 +33,7 @@ namespace ActionSample.StateMachine
 
             // 接地性を高めるための下方向への力
             // なぜこの処理が必要なのか: スライディング開始時に体が浮くのを防ぎ、地面に吸い付くようにするため
-            Context.Rigidbody.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+            Context.Rigidbody.AddForce(Vector3.down * Context.GravityScale, ForceMode.Impulse);
             
             // 空気抵抗（ドラッグ）の設定
             Context.Rigidbody.linearDamping = Context.SlidingDrag;
@@ -91,8 +91,8 @@ namespace ActionSample.StateMachine
             // 入力方向の計算
             Vector3 inputDirection = Context.transform.forward * Context.InputHandler.MovementInput.z + Context.transform.right * Context.InputHandler.MovementInput.x;
             
-            // 平地または上り坂の場合
-            // なぜこの条件が必要なのか: 斜面以外では摩擦や勢いの減衰を表現するため、時間制限を設ける
+           // 平地または上り坂の場合
+            // なぜこの条件が必要なのか: 斜面以外では摩擦や勢いの減衰を表現するため、時間制限を設ける 
             if (!Context.OnSlope() || Context.Rigidbody.linearVelocity.y > -0.1f)
             {
                 // 移動力を加える
