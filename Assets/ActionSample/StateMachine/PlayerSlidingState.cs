@@ -25,15 +25,18 @@ namespace ActionSample.StateMachine
             // 参照元のStartSlide()に相当
             
             // スライディングの持続時間を設定
-            _slideTimer = Context.SlideDuration;
+            _slideTimer = Context.SlidingDuration;
 
             // スケール変更（しゃがみ動作）
             _originalScale = Context.transform.localScale;
-            Context.transform.localScale = new Vector3(_originalScale.x, _originalScale.y, _originalScale.z);
+            Context.transform.localScale = new Vector3(_originalScale.x, Context.SlidingYScale, _originalScale.z);
 
             // 接地性を高めるための下方向への力
             // なぜこの処理が必要なのか: スライディング開始時に体が浮くのを防ぎ、地面に吸い付くようにするため
-            Context.Rigidbody.AddForce(Vector3.down * 10f, ForceMode.Impulse);
+            Context.Rigidbody.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+            
+            // 空気抵抗（ドラッグ）の設定
+            Context.Rigidbody.linearDamping = Context.SlidingDrag;
             
             // 初速の扱いについては、参照元は特に初速セットはしていないが（AddForceのみ）、
             // 既存の動きを引き継ぐ形になる。
@@ -50,6 +53,9 @@ namespace ActionSample.StateMachine
 
             // スケールを元に戻す
             Context.transform.localScale = _originalScale;
+            
+            // 空気抵抗をリセット
+            Context.Rigidbody.linearDamping = 0f;
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace ActionSample.StateMachine
             if (!Context.OnSlope() || Context.Rigidbody.linearVelocity.y > -0.1f)
             {
                 // 移動力を加える
-                Context.Rigidbody.AddForce(inputDirection.normalized * Context.SlideSpeed, ForceMode.Force);
+                Context.Rigidbody.AddForce(inputDirection.normalized * Context.SlidingSpeed, ForceMode.Force);
                 
                 // タイマーを減らす
                 _slideTimer -= Time.fixedDeltaTime;
@@ -100,7 +106,7 @@ namespace ActionSample.StateMachine
             else
             {
                 // 斜面に沿った方向への力を加える
-                Context.Rigidbody.AddForce(Context.GetSlopeMoveDirection(inputDirection) * Context.SlideSpeed, ForceMode.Force);
+                Context.Rigidbody.AddForce(Context.GetSlopeMoveDirection(inputDirection) * Context.SlidingSpeed, ForceMode.Force);
                 
                 // タイマーは減らさない（無限スライド）
             }
