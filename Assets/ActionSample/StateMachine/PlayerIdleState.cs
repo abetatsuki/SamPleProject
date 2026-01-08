@@ -39,11 +39,18 @@ namespace ActionSample.StateMachine
                 Context.StateMachine.ChangeState(Context.WalkState);
             }
             
-            // スライディング入力のチェック
-            // なぜこの処理が必要なのか: 停止状態からでもスライディング（しゃがみダッシュ等）を開始できるようにするため
+            // スライディング入力（Cキー）のチェック
+            // なぜこの処理が必要なのか: 停止状態から単発のスライディングを開始できるようにするため
             if(Context.InputHandler.SlideTriggered)
             {
                 Context.StateMachine.ChangeState(Context.SlideState);
+            }
+            
+            // 滑走入力（左Ctrlキー）のチェック
+            // なぜこの処理が必要なのか: 停止状態から継続的なスライディング（滑走）を開始できるようにするため
+            if(Context.InputHandler.SlidingTriggered)
+            {
+                Context.StateMachine.ChangeState(Context.SlidingState);
             }
 
             // グラップル入力のチェック
