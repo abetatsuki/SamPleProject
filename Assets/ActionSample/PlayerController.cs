@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using ActionSample.StateMachine;
+using Unity.VisualScripting;
 
 namespace ActionSample
 {
@@ -9,7 +10,7 @@ namespace ActionSample
     /// </summary>
     [RequireComponent(typeof(PlayerInputHandler))]
     [RequireComponent(typeof(Rigidbody))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour,IInitializable
     {
         /// <summary>
         /// 通常時の移動速度
@@ -110,51 +111,41 @@ namespace ActionSample
         /// </summary>
         public PlayerGrappleState GrappleState { get; private set; }
 
-        [SerializeField]
-        private Transform _mainCamera;
-
-        private void Awake()
+        /// <summary>
+        /// 初期化処理。
+        ///</summary>
+        public void Initialize()
         {
-            // 必要なコンポーネントの取得
-            Rigidbody = GetComponent<Rigidbody>();
-            InputHandler = GetComponent<PlayerInputHandler>();
-            
-            // GrappleControllerの取得。アタッチされていなければエラーログを出力するか、nullのままにしておく（RequireComponentはつけていないため）
-            // なぜこの処理が必要なのか: グラップル機能を利用するため
-            GrappleController = GetComponent<GrappleController>();
-            if (GrappleController == null)
-            {
-                Debug.LogWarning("GrappleController not found on Player object. Grappling will not work.");
-            }
-            
-            // カメラが未設定の場合はメインカメラを使用する
-            // なぜこの処理が必要なのか: インスペクターでの設定漏れを防ぎ、自動的にメインカメラを対象にするため
+            GetComponents();
             if (_mainCamera == null) _mainCamera = Camera.main.transform;
 
-            // リコイルコントローラーの初期化
-            // なぜこの処理が必要なのか: MonoBehaviourではない純粋なC#クラスとしてロジックを分離しているため、ここでインスタンス化が必要
             RecoilController = new RecoilController();
             RecoilController.RecoilRecoverySpeed = RecoilRecoverySpeed;
-            
-            // 視点操作クラスの初期化
-            // なぜこの処理が必要なのか: プレイヤーのTransformとカメラのTransformを操作対象として渡す必要があるため
+
             Aiming = new PlayerAiming(transform, _mainCamera, RecoilController);
             Aiming.MouseSensitivity = MouseSensitivity;
             Aiming.MaxLookAngle = MaxLookAngle;
 
-            // ステートマシンの初期化
-            // なぜこの処理が必要なのか: プレイヤーの状態遷移（待機、歩行、スライディングなど）を管理するため
             StateMachine = new StateMachine.StateMachine();
             IdleState = new PlayerIdleState(this);
             WalkState = new PlayerWalkState(this);
             SlideState = new PlayerSlideState(this);
             GrappleState = new PlayerGrappleState(this);
+
+            StateMachine.Initialize(IdleState);
+        }
+
+        [SerializeField]
+        private Transform _mainCamera;
+
+        private void Awake()
+        {
+           Initialize();
         }
 
         private void Start()
         {
-            // 初期ステートとして待機状態を設定
-            StateMachine.Initialize(IdleState);
+
         }
 
         private void Update()
@@ -189,6 +180,12 @@ namespace ActionSample
             }
         }
 
+        private void GetComponents()
+        {
+            Rigidbody = GetComponent<Rigidbody>();
+            InputHandler = GetComponent<PlayerInputHandler>();
+            GrappleController = GetComponent<GrappleController>();
+        }
         private void OnValidate()
         {
              // インスペクターでの値変更をランタイム反映させるための簡易対応
