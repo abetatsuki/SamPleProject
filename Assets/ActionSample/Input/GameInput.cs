@@ -57,10 +57,15 @@ namespace ActionSample.Input
             var grappleAction = _playerMap.AddAction("Grapple", InputActionType.Button, "<Keyboard>/f");
             Grapple = new InputActionEntity<float>(grappleAction);
 
-            // Slideアクションの定義 (Left Ctrl)
-            // スライディング操作（左Ctrl）を定義するため
-            var slideAction = _playerMap.AddAction("Slide", InputActionType.Button, "<Keyboard>/leftCtrl");
+            // Slideアクションの定義 (C Key)
+            // 単発のスライディング（ダッシュ）操作を定義するため
+            var slideAction = _playerMap.AddAction("Slide", InputActionType.Button, "<Keyboard>/c");
             Slide = new InputActionEntity<float>(slideAction);
+
+            // Slidingアクションの定義 (Left Ctrl)
+            // 継続的なスライディング（滑走）操作を定義するため
+            var slidingAction = _playerMap.AddAction("Sliding", InputActionType.Button, "<Keyboard>/leftCtrl");
+            Sliding = new InputActionEntity<float>(slidingAction);
         }
 
         /// <summary>移動入力 (WASD)。</summary>
@@ -81,8 +86,11 @@ namespace ActionSample.Input
         /// <summary>グラップル入力 (F Key)。</summary>
         public InputActionEntity<float> Grapple { get; private set; }
 
-        /// <summary>スライディング入力 (Left Ctrl)。</summary>
+        /// <summary>スライディング入力 (C Key)。</summary>
         public InputActionEntity<float> Slide { get; private set; }
+
+        /// <summary>滑走入力 (Left Ctrl)。</summary>
+        public InputActionEntity<float> Sliding { get; private set; }
 
 
         /// <summary>
@@ -100,6 +108,7 @@ namespace ActionSample.Input
             Reload.Enable();
             Grapple.Enable();
             Slide.Enable();
+            Sliding.Enable();
         }
 
         /// <summary>
@@ -117,6 +126,7 @@ namespace ActionSample.Input
             Reload.Disable();
             Grapple.Disable();
             Slide.Disable();
+            Sliding.Disable();
         }
 
 
@@ -133,6 +143,7 @@ namespace ActionSample.Input
             Reload.Dispose();
             Grapple.Dispose();
             Slide.Dispose();
+            Sliding.Dispose();
 
             if (_inputActionAsset != null)
             {
