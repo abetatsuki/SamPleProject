@@ -56,6 +56,10 @@ namespace ActionSample
         [Header("Recoil Settings")]
         public float RecoilRecoverySpeed = 10f;
 
+        [Header("Slope Settings")]
+        public float MaxSlopeAngle = 40f;
+        public float PlayerHeight = 2f;
+
         /// <summary>
         /// 物理挙動コンポーネントへの参照
         /// </summary>
@@ -102,9 +106,14 @@ namespace ActionSample
         public PlayerWalkState WalkState { get; private set; }
 
         /// <summary>
-        /// スライディングステート
+        /// スライディングステート（短距離）
         /// </summary>
         public PlayerSlideState SlideState { get; private set; }
+
+        /// <summary>
+        /// スライディングステート（斜面滑走）
+        /// </summary>
+        public PlayerSlidingState SlidingState { get; private set; }
 
         /// <summary>
         /// グラップルステート
@@ -130,13 +139,40 @@ namespace ActionSample
             IdleState = new PlayerIdleState(this);
             WalkState = new PlayerWalkState(this);
             SlideState = new PlayerSlideState(this);
+            SlidingState = new PlayerSlidingState(this);
             GrappleState = new PlayerGrappleState(this);
 
             StateMachine.Initialize(IdleState);
         }
 
+        /// <summary>
+        /// 斜面上にいるかどうかを判定します。
+        /// </summary>
+        /// <returns>斜面上ならtrue</returns>
+        public bool OnSlope()
+        {
+            if (Physics.Raycast(transform.position, Vector3.down, out _slopeHit, PlayerHeight * 0.5f + 0.3f))
+            {
+                float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+                return angle < MaxSlopeAngle && angle != 0;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 斜面に沿った移動方向を取得します。
+        /// </summary>
+        /// <param name="direction">元の移動方向</param>
+        /// <returns>斜面に沿ったベクトル</returns>
+        public Vector3 GetSlopeMoveDirection(Vector3 direction)
+        {
+            return Vector3.ProjectOnPlane(direction, _slopeHit.normal).normalized;
+        }
+
         [SerializeField]
         private Transform _mainCamera;
+        private RaycastHit _slopeHit;
 
         private void Awake()
         {
