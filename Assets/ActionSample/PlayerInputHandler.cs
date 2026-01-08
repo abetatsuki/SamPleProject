@@ -67,12 +67,18 @@ namespace ActionSample
         /// </summary>
         public bool SlidingInputHeld { get; private set; }
 
+        /// <summary>
+        /// ジャンプ入力がトリガーされた瞬間の状態。
+        /// </summary>
+        public bool JumpTriggered { get; private set; }
+
 
         private GameInput _gameInput;
 
         // トリガー入力の一時保存用フラグ
         private bool _slideTriggeredBuffer;
         private bool _slidingTriggeredBuffer;
+        private bool _jumpTriggeredBuffer;
         private bool _reloadInputBuffer;
         private bool _grappleInputBuffer;
 
@@ -115,6 +121,9 @@ namespace ActionSample
             _gameInput.Sliding.Started += _ => SlidingInputHeld = true;
             _gameInput.Sliding.Canceled += _ => SlidingInputHeld = false;
 
+            // ジャンプ (スペースキー: トリガー)
+            _gameInput.Jump.Performed += _ => _jumpTriggeredBuffer = true;
+
             // リロード (トリガー)
             _gameInput.Reload.Performed += _ => _reloadInputBuffer = true;
 
@@ -150,6 +159,9 @@ namespace ActionSample
 
             SlidingTriggered = _slidingTriggeredBuffer;
             _slidingTriggeredBuffer = false;
+
+            JumpTriggered = _jumpTriggeredBuffer;
+            _jumpTriggeredBuffer = false;
 
             ReloadInput = _reloadInputBuffer;
             _reloadInputBuffer = false;
