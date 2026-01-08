@@ -47,6 +47,19 @@ namespace ActionSample.StateMachine
         {
             base.Exit();
             
+            // スケール復元時の地面めり込み回避
+            // なぜこの処理が必要なのか: スケールを戻すとコライダーが地面に食い込み、物理演算で大きく弾き飛ばされてしまうのを防ぐため
+            float scaleDifference = _originalScale.y - Context.transform.localScale.y;
+            if (scaleDifference > 0)
+            {
+                float heightOffset = scaleDifference * Context.PlayerHeight * 0.5f;
+                Context.transform.position += Vector3.up * heightOffset;
+            }
+
+            // スケールを元に戻す
+            // なぜこの処理が必要なのか: スライディング終了後に通常の立ち姿勢に戻すため
+            Context.transform.localScale = _originalScale;
+
             // 空気抵抗をリセット
             // なぜこの処理が必要なのか: 通常移動（歩行など）に戻った際に、スライディング用の減速設定を引き継がないようにするため
             Context.Rigidbody.linearDamping = 0f;
@@ -58,6 +71,13 @@ namespace ActionSample.StateMachine
         public override void LogicUpdate()
         {
             base.LogicUpdate();
+
+            // ジャンプ入力があればJumpへ
+            if (Context.InputHandler.JumpTriggered)
+            {
+                Context.StateMachine.ChangeState(Context.JumpState);
+            }
+
             // スライディング中は他の入力を受け付けない（キャンセル等の仕様があればここに追記）
             // 現状は強制的にタイマー終了まで滑り続ける仕様
         }
