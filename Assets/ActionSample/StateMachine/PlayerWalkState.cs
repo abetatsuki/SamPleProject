@@ -39,6 +39,12 @@ namespace ActionSample.StateMachine
             {
                 Context.StateMachine.ChangeState(Context.SlidingState);
             }
+            // 入力判定：ジャンプ入力があればJumpへ
+            // なぜこの処理が必要なのか: 移動中に障害物を飛び越えたり段差を登るため
+            else if (Context.InputHandler.JumpTriggered)
+            {
+                Context.StateMachine.ChangeState(Context.JumpState);
+            }
             // 入力判定：グラップル入力があればGrappleへ
             // なぜこの処理が必要なのか: 移動中から即座にグラップルアクションへ移行するため
             else if (Context.InputHandler.GrappleInput && Context.GrappleController != null)
