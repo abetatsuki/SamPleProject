@@ -1551,7 +1551,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1572993818
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1875,7 +1875,7 @@ MonoBehaviour:
   SlideSpeed: 15
   SlideDuration: 0.8
   SlideDrag: 0.5
-  MouseSensitivity: 2
+  MouseSensitivity: 0.1
   MaxLookAngle: 80
   RecoilRecoverySpeed: 10
   _mainCamera: {fileID: 1759868253}
@@ -2285,7 +2285,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1849483995
 Transform:
   m_ObjectHideFlags: 0
@@ -2314,7 +2314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f95d96eb3a37174ea31ca481a8f168e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionSample.WeaponController
-  InputHandler: {fileID: 1614633973}
+  InputHandler: {fileID: 0}
   MainCamera: {fileID: 872399771}
   Muzzle: {fileID: 844150093}
   BulletPrefab: {fileID: 2530637846005440131, guid: b6a5aa5689d36284091e45f08c65d94e, type: 3}
