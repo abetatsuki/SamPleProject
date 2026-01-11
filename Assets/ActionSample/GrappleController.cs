@@ -9,7 +9,7 @@ namespace ActionSample
     [RequireComponent(typeof(Rigidbody))]
     public class GrappleController : MonoBehaviour
     {
-       
+
 
         /// <summary>
         /// グラップルが現在接続中かどうかを返します。
@@ -92,9 +92,6 @@ namespace ActionSample
         /// <returns>グラップルが成功した場合はtrue</returns>
         public bool StartGrapple()
         {
-            // アニメーション中であれば中断
-            _isRetracting = false;
-
             // カメラの前方に向かってレイを飛ばし、接続地点を探す
             // プレイヤーが見ている位置にグラップルを固定するため
             RaycastHit hit;
@@ -143,6 +140,13 @@ namespace ActionSample
         /// </summary>
         public void StopGrapple()
         {
+            // 既にグラップルが終了しており（_isGrapplingがfalse）、かつアニメーション中（LineRendererが有効）なら
+            // オフセットをリセットせずに（アニメーションを継続させて）処理を抜ける
+            if (!_isGrappling && LineRenderer != null && LineRenderer.enabled)
+            {
+                return;
+            }
+
             // グラップル状態を解除
             _isGrappling = false;
 
@@ -154,12 +158,10 @@ namespace ActionSample
                 _joint = null;
             }
 
-            // ビジュアルの収縮アニメーション開始
+            // ビジュアルの収縮アニメーション開始準備
             // 現在のプレイヤーとアンカーを結ぶ線上を、手元からアンカーに向かってラインが消えていくようにする
-            // すでに収縮中であれば、オフセットをリセットせずに継続させる
-            if (LineRenderer != null && LineRenderer.enabled && !_isRetracting)
+            if (LineRenderer != null && LineRenderer.enabled)
             {
-                _isRetracting = true;
                 _retractOffset = 0f;
             }
         }
@@ -226,12 +228,11 @@ namespace ActionSample
 
         private Rigidbody _rb;
         private SpringJoint _joint;
-        
+
         // グラップル状態のフラグ（ジョイントの有無とは独立させる）
         private bool _isGrappling;
 
         // 収縮アニメーション用の状態変数
-        private bool _isRetracting;
         private float _retractOffset;
 
         private void Awake()
@@ -239,7 +240,7 @@ namespace ActionSample
             // 必要なコンポーネントのキャッシュ
             // 毎フレームのコンポーネント検索を避け、パフォーマンスを向上させるため
             _rb = GetComponent<Rigidbody>();
-            
+
             if (LineRenderer != null)
             {
                 LineRenderer.useWorldSpace = true;
@@ -259,8 +260,8 @@ namespace ActionSample
         /// </summary>
         private void DrawRope()
         {
-            // グラップル中、または収縮アニメーション中でなければ描画しない
-            if ((!_isGrappling && !_isRetracting) || LineRenderer == null) return;
+            // ラインレンダラーがない、または（グラップル中でもなくライン表示もOFF）なら何もしない
+            if (LineRenderer == null || (!_isGrappling && !LineRenderer.enabled)) return;
 
             // 始点は常に現在の銃口（またはプレイヤー位置）
             Vector3 currentGunTipPos = GunTip != null ? GunTip.position : transform.position;
@@ -269,10 +270,11 @@ namespace ActionSample
             {
                 // 通常のグラップル中（スイング・プル共通）：始点は銃口、終点は接続点
                 // 常にプレイヤーの手元に追従させる
+
                 LineRenderer.SetPosition(0, currentGunTipPos);
                 LineRenderer.SetPosition(1, GrapplePoint);
             }
-            else if (_isRetracting)
+            else if (LineRenderer.enabled)
             {
                 // 収縮アニメーション中：始点を「現在の銃口位置」から「アンカー」に向かってずらしていく
                 // これにより、プレイヤーが移動してもラインの角度が追従しつつ、手元からラインが離れていく表現になる
@@ -283,14 +285,13 @@ namespace ActionSample
                 if (_retractOffset >= distanceToAnchor)
                 {
                     // アンカーに到達したら終了
-                    _isRetracting = false;
                     LineRenderer.enabled = false;
                 }
                 else
                 {
                     // 現在の銃口位置からアンカーへ向かって、オフセット分だけ進んだ位置を始点とする
                     Vector3 drawStartPos = Vector3.MoveTowards(currentGunTipPos, GrapplePoint, _retractOffset);
-                    
+
                     LineRenderer.SetPosition(0, drawStartPos);
                     LineRenderer.SetPosition(1, GrapplePoint);
                 }
