@@ -10,7 +10,7 @@ namespace ActionSample.StateMachine
     {
         // サブステートマシン
         private StateMachine _subStateMachine;
-        
+
         // サブステートのインスタンス
         private GrappleSwingState _swingState;
         private GrapplePullState _pullState;
@@ -23,7 +23,7 @@ namespace ActionSample.StateMachine
         {
             // サブステートマシンの初期化
             _subStateMachine = new StateMachine();
-            
+
             // 各サブステートの生成（自身をParentとして渡す）
             _swingState = new GrappleSwingState(context, this);
             _pullState = new GrapplePullState(context, this);
@@ -35,7 +35,7 @@ namespace ActionSample.StateMachine
         public override void Enter()
         {
             base.Enter();
-            
+
             // 常にSwingステートから開始する
             // グラップルは常に「発射→接続（スイング）」から始まり、その後の入力時間でプルに派生するため
             _subStateMachine.Initialize(_swingState);
@@ -47,7 +47,7 @@ namespace ActionSample.StateMachine
         public override void Exit()
         {
             base.Exit();
-            
+
             // サブステートの終了処理も確実に行う
             if (_subStateMachine.CurrentState != null)
             {
@@ -64,6 +64,12 @@ namespace ActionSample.StateMachine
         /// </summary>
         public override void LogicUpdate()
         {
+            // 入力監視：グラップル入力が再度あった場合、再発射のためにSwingステートへ戻す
+            if (Context.InputHandler.GrappleInput)
+            {
+                _subStateMachine.ChangeState(this);
+            }
+
             base.LogicUpdate();
             _subStateMachine.CurrentState.LogicUpdate();
         }
