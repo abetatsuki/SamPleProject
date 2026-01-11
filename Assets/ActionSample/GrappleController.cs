@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ActionSample
 {
@@ -9,13 +9,7 @@ namespace ActionSample
     [RequireComponent(typeof(Rigidbody))]
     public class GrappleController : MonoBehaviour
     {
-        /// <summary>
-        /// コンストラクタ
-        /// MonoBehaviourのインスタンス化はUnityが行うため、明示的な初期化は行いません。
-        /// </summary>
-        public GrappleController()
-        {
-        }
+       
 
         /// <summary>
         /// グラップルが現在接続中かどうかを返します。
