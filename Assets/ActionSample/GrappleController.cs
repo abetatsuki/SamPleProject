@@ -200,6 +200,18 @@ namespace ActionSample
             // 制約の補足：入力を入れすぎると、進行方向と逆向きになった場合に失速の原因となり、物理法則に則った納得感が生まれる
         }
 
+        public void ApplyReleaseBoost()
+        {
+            Vector3 moveDirection = _rb.linearVelocity.normalized;
+
+            if(moveDirection == Vector3.zero)
+            {
+                moveDirection = PlayerCamera.forward;
+            }
+
+            _rb.AddForce(moveDirection * ReleaseBoostForce, ForceMode.Impulse);
+        }
+
         /// <summary>
         /// ターゲット地点へ直線的にプレイヤーを引き寄せます（プル挙動）。
         /// スイング（物理）ではなく、ワイヤーの巻き取りによる高速移動（非物理的移動）を実現するためです。
