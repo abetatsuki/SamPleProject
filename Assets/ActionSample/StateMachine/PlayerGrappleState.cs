@@ -67,6 +67,7 @@ namespace ActionSample.StateMachine
             // 入力監視：グラップル入力が再度あった場合、再発射のためにSwingステートへ戻す
             if (Context.InputHandler.GrappleInput)
             {
+                Context.GrappleController.IncreaseSpeedMultipier();
                 _subStateMachine.ChangeState(this);
             }
 
@@ -100,6 +101,7 @@ namespace ActionSample.StateMachine
         /// </summary>
         public void FinishGrapple()
         {
+            Context.GrappleController.ResetSpeedMultiplier();
             // 入力状況に応じて適切な移動ステートへ戻す
             if (Context.InputHandler.MovementInput != Vector3.zero)
             {
