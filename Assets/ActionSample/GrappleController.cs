@@ -65,6 +65,12 @@ namespace ActionSample
         public float RopeRetractSpeed = 100f;
 
         /// <summary>
+        /// グラップル解除時に加える加速力
+        /// 連続グラップルすることで速度を積み上げていく。
+        /// </summary>
+        public float ReleaseBoostForce = 20f;
+
+        /// <summary>
         /// グラップル可能なレイヤー
         /// </summary>
         [Header("References")]
