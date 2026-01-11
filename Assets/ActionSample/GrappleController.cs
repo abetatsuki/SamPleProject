@@ -70,6 +70,11 @@ namespace ActionSample
         /// </summary>
         public float ReleaseBoostForce = 20f;
 
+        public float AccelerationStep = 0.5f;
+
+        public float MaxSpeedMultiplier = 3.0f;
+
+
         /// <summary>
         /// グラップル可能なレイヤー
         /// </summary>
@@ -195,21 +200,9 @@ namespace ActionSample
 
             // 加速力を適用
             // ロープに繋がれた状態でこの力を加えると、振り子の「漕ぐ」動作となり、スイングを加速させることができるため
-            _rb.AddForce(targetDirection * AirControlForce, ForceMode.Acceleration);
+            _rb.AddForce(targetDirection * AirControlForce * _currentSpeedMultiplier, ForceMode.Acceleration);
 
             // 制約の補足：入力を入れすぎると、進行方向と逆向きになった場合に失速の原因となり、物理法則に則った納得感が生まれる
-        }
-
-        public void ApplyReleaseBoost()
-        {
-            Vector3 moveDirection = _rb.linearVelocity.normalized;
-
-            if(moveDirection == Vector3.zero)
-            {
-                moveDirection = PlayerCamera.forward;
-            }
-
-            _rb.AddForce(moveDirection * ReleaseBoostForce, ForceMode.Impulse);
         }
 
         /// <summary>
@@ -228,10 +221,17 @@ namespace ActionSample
 
             // ターゲットへの方向ベクトルを計算
             Vector3 direction = (GrapplePoint - transform.position).normalized;
+            
+            float targetSpeed = PullSpeed * _currentSpeedMultiplier;
+
+            if(_rb.linearVelocity.magnitude > targetSpeed)
+            {
+               targetSpeed = _rb.linearVelocity.magnitude;
+            }
 
             // 速度を上書きして強制移動
             // 重力や慣性を無視して、ターゲットへ一直線に向かわせるためです。
-            _rb.linearVelocity = direction * PullSpeed;
+            _rb.linearVelocity = direction * targetSpeed;
         }
 
         /// <summary>
@@ -244,8 +244,21 @@ namespace ActionSample
             return Vector3.Distance(transform.position, GrapplePoint) <= StopPullDistance;
         }
 
+        public void IncreaseSpeedMultipier()
+        {
+            _currentSpeedMultiplier += AccelerationStep;
+            _currentSpeedMultiplier = Mathf.Clamp(_currentSpeedMultiplier, 1.0f, MaxSpeedMultiplier);
+        }
+
+        public void ResetSpeedMultiplier()
+        {
+            _currentSpeedMultiplier = 1.0f;
+        }
+
         private Rigidbody _rb;
         private SpringJoint _joint;
+
+        private float _currentSpeedMultiplier = 1.0f;
 
         // グラップル状態のフラグ（ジョイントの有無とは独立させる）
         private bool _isGrappling;
