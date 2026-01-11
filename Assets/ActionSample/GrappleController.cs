@@ -15,7 +15,7 @@ namespace ActionSample
         /// グラップルが現在接続中かどうかを返します。
         /// ステートマシンや外部クラスが現在のグラップル状態を確認し、適切な挙動（アニメーションや遷移）を行うためです。
         /// </summary>
-        public bool IsGrappling => _joint != null;
+        public bool IsGrappling => _isGrappling;
 
         /// <summary>
         /// グラップルがヒットした地点を返します。
@@ -60,6 +60,11 @@ namespace ActionSample
         public float JointMassScale = 4.5f;
 
         /// <summary>
+        /// ロープが戻る際のアニメーション速度
+        /// </summary>
+        public float RopeRetractSpeed = 100f;
+
+        /// <summary>
         /// グラップル可能なレイヤー
         /// </summary>
         [Header("References")]
@@ -87,6 +92,9 @@ namespace ActionSample
         /// <returns>グラップルが成功した場合はtrue</returns>
         public bool StartGrapple()
         {
+            // アニメーション中であれば中断
+            _isRetracting = false;
+
             // カメラの前方に向かってレイを飛ばし、接続地点を探す
             // プレイヤーが見ている位置にグラップルを固定するため
             RaycastHit hit;
@@ -122,6 +130,7 @@ namespace ActionSample
                     LineRenderer.enabled = true;
                 }
 
+                _isGrappling = true;
                 return true;
             }
 
@@ -134,18 +143,24 @@ namespace ActionSample
         /// </summary>
         public void StopGrapple()
         {
+            // グラップル状態を解除
+            _isGrappling = false;
+
             // ジョイントの破棄
             // 物理的な接続を解除するため
             if (_joint != null)
             {
                 Destroy(_joint);
+                _joint = null;
             }
 
-            // ビジュアルの無効化
-            // ロープの表示を消去するため
-            if (LineRenderer != null)
+            // ビジュアルの収縮アニメーション開始
+            // 現在のプレイヤーとアンカーを結ぶ線上を、手元からアンカーに向かってラインが消えていくようにする
+            // すでに収縮中であれば、オフセットをリセットせずに継続させる
+            if (LineRenderer != null && LineRenderer.enabled && !_isRetracting)
             {
-                LineRenderer.enabled = false;
+                _isRetracting = true;
+                _retractOffset = 0f;
             }
         }
 
@@ -157,6 +172,9 @@ namespace ActionSample
         /// <param name="vertical">縦方向入力 (-1.0 ~ 1.0)</param>
         public void ApplyAirControl(float horizontal, float vertical)
         {
+            // グラップル中でなければ何もしない
+            if (!_isGrappling) return;
+
             // 入力がない場合は何もしない
             // 不要な力（ゼロベクトル）の加算を防ぎ、慣性を維持するため
             if (horizontal == 0 && vertical == 0) return;
@@ -208,6 +226,13 @@ namespace ActionSample
 
         private Rigidbody _rb;
         private SpringJoint _joint;
+        
+        // グラップル状態のフラグ（ジョイントの有無とは独立させる）
+        private bool _isGrappling;
+
+        // 収縮アニメーション用の状態変数
+        private bool _isRetracting;
+        private float _retractOffset;
 
         private void Awake()
         {
@@ -234,13 +259,42 @@ namespace ActionSample
         /// </summary>
         private void DrawRope()
         {
-            if (!IsGrappling || LineRenderer == null) return;
+            // グラップル中、または収縮アニメーション中でなければ描画しない
+            if ((!_isGrappling && !_isRetracting) || LineRenderer == null) return;
 
-            // 始点は銃口、終点は接続点
-            // プレイヤーの手に持っている武器からロープが出ているように見せるため
-            Vector3 startPos = GunTip != null ? GunTip.position : transform.position;
-            LineRenderer.SetPosition(0, startPos);
-            LineRenderer.SetPosition(1, GrapplePoint);
+            // 始点は常に現在の銃口（またはプレイヤー位置）
+            Vector3 currentGunTipPos = GunTip != null ? GunTip.position : transform.position;
+
+            if (_isGrappling)
+            {
+                // 通常のグラップル中（スイング・プル共通）：始点は銃口、終点は接続点
+                // 常にプレイヤーの手元に追従させる
+                LineRenderer.SetPosition(0, currentGunTipPos);
+                LineRenderer.SetPosition(1, GrapplePoint);
+            }
+            else if (_isRetracting)
+            {
+                // 収縮アニメーション中：始点を「現在の銃口位置」から「アンカー」に向かってずらしていく
+                // これにより、プレイヤーが移動してもラインの角度が追従しつつ、手元からラインが離れていく表現になる
+                _retractOffset += RopeRetractSpeed * Time.deltaTime;
+
+                float distanceToAnchor = Vector3.Distance(currentGunTipPos, GrapplePoint);
+
+                if (_retractOffset >= distanceToAnchor)
+                {
+                    // アンカーに到達したら終了
+                    _isRetracting = false;
+                    LineRenderer.enabled = false;
+                }
+                else
+                {
+                    // 現在の銃口位置からアンカーへ向かって、オフセット分だけ進んだ位置を始点とする
+                    Vector3 drawStartPos = Vector3.MoveTowards(currentGunTipPos, GrapplePoint, _retractOffset);
+                    
+                    LineRenderer.SetPosition(0, drawStartPos);
+                    LineRenderer.SetPosition(1, GrapplePoint);
+                }
+            }
         }
     }
 }
